@@ -6,9 +6,6 @@ public sealed class MCBlob :
     MonoBehaviour
 {
     private Subsphere[] _subspheres;
-    private Dictionary<int, HashSet<Subsphere>> _subsphereGroups = new Dictionary<int, HashSet<Subsphere>>();
-
-    public Dictionary<int, HashSet<Subsphere>> SubsphereGroups { get { return _subsphereGroups; } }
 
     /*Amount of cubes in X/Y/Z directions, Dimension will always be from -.5f to .5f in XYZ
       remember to call Regen() if changing!
@@ -484,30 +481,12 @@ public sealed class MCBlob :
     void Start()
     {
         _subspheres = GetComponent<SubsphereSeeker>().GetSubspheres().ToArray();
-        _subsphereGroups = CreateSubsphereGroups(_subspheres);
 
         lt = 0f;
 
         isoLevel = 1.95f;
 
         Regen();
-    }
-
-    private static Dictionary<int, HashSet<Subsphere>> CreateSubsphereGroups(IEnumerable<Subsphere> subspheres)
-    {
-        var result = new Dictionary<int, HashSet<Subsphere>>();
-
-        foreach (var subsphere in subspheres)
-        {
-            if (!result.ContainsKey(subsphere.GroupTag))
-            {
-                result.Add(subsphere.GroupTag, new HashSet<Subsphere>());
-            }
-
-            result[subsphere.GroupTag].Add(subsphere);
-        }
-
-        return result;
     }
 
     /*Unity Specific starting of engine*/
