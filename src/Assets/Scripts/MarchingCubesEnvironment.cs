@@ -115,21 +115,24 @@ public sealed class MarchingCubesEnvironment :
     /*Cube Class*/
     private class LatticeCube
     {
+        private readonly LatticeEdge[] _edges = new LatticeEdge[12];
+        
+        public LatticeEdge GetEdge(int edgeIndex)
+        {
+            return _edges[edgeIndex];
+        }
+
+        public void SetEdge(int edgeIndex, LatticeEdge edge)
+        {
+            _edges[edgeIndex] = edge;
+        }
 
         public LatticeCube()
         {
             cntr = 0;
-            edges = new LatticeEdge[12];
-            for (int i = 0; i < 12; i++)
-            {
-                edges[i] = null;
-            }
             points = new LatticePoint[8];
         }
 
-
-        /*12 Edges, see march() for their positioning*/
-        public LatticeEdge[] edges;
 
         /*8 Points, see march() for their positioning*/
         public LatticePoint[] points;
@@ -164,15 +167,11 @@ public sealed class MarchingCubesEnvironment :
             this.cntr = 0;
             this.axisI = axisI;
         }
-
     }
 
     /*Point (in lattice) class*/
     public class LatticePoint
     {
-
-
-
         /*Calculated Intensity or Power of point*/
         public float _i;
 
@@ -184,7 +183,6 @@ public sealed class MarchingCubesEnvironment :
 
         /*Object Space position of point*/
         public float[] index;
-
 
         public LatticePoint(float x, float y, float z, int px, int py, int pz, MarchingCubesEnvironment thismcblob)
         {
@@ -214,8 +212,6 @@ public sealed class MarchingCubesEnvironment :
             get { return index[2]; }
             set { index[2] = value; }
         }
-
-
 
         /*Calculate the power of a point only if it hasn't been calculated already for this frame*/
         public float i()
@@ -247,12 +243,7 @@ public sealed class MarchingCubesEnvironment :
                 index[idx] = value;
             }
         }
-
-
-
     }
-
-
 
     /* Normals are calculated by 'averaging' all the derivatives of the Blob power functions*/
     private Vector3 calcNormal(Vector3 pnt)
@@ -307,7 +298,7 @@ public sealed class MarchingCubesEnvironment :
     private void genEdge(LatticeCube cube, int edgei, int p1i, int p2i)
     {
         Vector3 v;
-        LatticeEdge e = cube.edges[edgei];
+        LatticeEdge e = cube.GetEdge(edgei);
         if (e.cntr < _currentFrameCounter)
         {
 
@@ -366,11 +357,11 @@ public sealed class MarchingCubesEnvironment :
             int tmp;
             while (_triangleTable[cubeIndex, tpi] != -1)
             {
-                tmp = cube.edges[_triangleTable[cubeIndex, tpi + 2]].vi;
+                tmp = cube.GetEdge(_triangleTable[cubeIndex, tpi + 2]).vi;
                 _newTriangles[_triangleIndex++] = tmp; vertc += tmp;
-                tmp = cube.edges[_triangleTable[cubeIndex, tpi + 1]].vi;
+                tmp = cube.GetEdge(_triangleTable[cubeIndex, tpi + 1]).vi;
                 _newTriangles[_triangleIndex++] = tmp; vertc += tmp;
-                tmp = cube.edges[_triangleTable[cubeIndex, tpi]].vi;
+                tmp = cube.GetEdge(_triangleTable[cubeIndex, tpi]).vi;
                 _newTriangles[_triangleIndex++] = tmp; vertc += tmp;
                 tpi += 3;
             }
@@ -644,75 +635,112 @@ public sealed class MarchingCubesEnvironment :
                     cpt[7] = getPoint(ijx, ijy + 1, ijz + 1);
 
 
-                    LatticeEdge[] e = c.edges;
-
-
-                    e[5] = _edges[ep++]; e[5].axisI = 1;
-                    e[6] = _edges[ep++]; e[6].axisI = 0;
-                    e[10] = _edges[ep++]; e[10].axisI = 2;
+                    c.SetEdge(5, _edges[ep++]);
+                    c.GetEdge(5).axisI = 1;
+                    c.SetEdge(6, _edges[ep++]);
+                    c.GetEdge(6).axisI = 0;
+                    c.SetEdge(10, _edges[ep++]);
+                    c.GetEdge(10).axisI = 2;
 
                     tc = getCube(ijx + 1, ijy, ijz);
-                    if (tc != null) { tc.edges[11] = e[10]; tc.edges[7] = e[5]; }
+                    if (tc != null)
+                    {
+                        tc.SetEdge(11, c.GetEdge(10));
+                        tc.SetEdge(7, c.GetEdge(5));
+                    }
 
                     tc = getCube(ijx, ijy + 1, ijz);
-                    if (tc != null) { tc.edges[4] = c.edges[6]; tc.edges[9] = c.edges[10]; }
+                    if (tc != null)
+                    {
+                        tc.SetEdge(4, c.GetEdge(6));
+                        tc.SetEdge(9, c.GetEdge(10));
+                    }
 
                     tc = getCube(ijx, ijy + 1, ijz + 1);
-                    if (tc != null) { tc.edges[0] = c.edges[6]; }
+                    if (tc != null)
+                    {
+                        tc.SetEdge(0, c.GetEdge(6));
+                    }
 
                     tc = getCube(ijx + 1, ijy, ijz + 1);
-                    if (tc != null) { tc.edges[3] = c.edges[5]; }
+                    if (tc != null)
+                    {
+                        tc.SetEdge(3, c.GetEdge(5));
+                    }
 
                     tc = getCube(ijx + 1, ijy + 1, ijz);
-                    if (tc != null) { tc.edges[8] = c.edges[10]; }
+                    if (tc != null)
+                    {
+                        tc.SetEdge(8, c.GetEdge(10));
+                    }
 
                     tc = getCube(ijx, ijy, ijz + 1);
-                    if (tc != null) { tc.edges[1] = c.edges[5]; tc.edges[2] = c.edges[6]; }
-
-                    if (e[0] == null)
+                    if (tc != null)
                     {
-                        e[0] = _edges[ep++]; e[0].axisI = 0;
-                    }
-                    if (e[1] == null)
-                    {
-                        e[1] = _edges[ep++]; e[1].axisI = 1;
-                    }
-                    if (e[2] == null)
-                    {
-                        e[2] = _edges[ep++]; e[2].axisI = 0;
-                    }
-                    else { topo++; }
-                    if (e[3] == null)
-                    {
-                        e[3] = _edges[ep++]; e[3].axisI = 1;
-                    }
-                    if (e[4] == null)
-                    {
-                        e[4] = _edges[ep++]; e[4].axisI = 0;
-                    }
-                    if (e[7] == null)
-                    {
-                        e[7] = _edges[ep++]; e[7].axisI = 1;
-                    }
-                    if (e[8] == null)
-                    {
-                        e[8] = _edges[ep++]; e[8].axisI = 2;
-                    }
-                    if (e[9] == null)
-                    {
-                        e[9] = _edges[ep++]; e[9].axisI = 2;
-                    }
-                    if (e[11] == null)
-                    {
-                        e[11] = _edges[ep++]; e[11].axisI = 2;
+                        tc.SetEdge(1, c.GetEdge(5));
+                        tc.SetEdge(2, c.GetEdge(6));
                     }
 
+                    if (c.GetEdge(0) == null)
+                    {
+                        c.SetEdge(0, _edges[ep++]);
+                        c.GetEdge(0).axisI = 0;
+                    }
+                    
+                    if (c.GetEdge(1) == null)
+                    {
+                        c.SetEdge(1, _edges[ep++]);
+                        c.GetEdge(1).axisI = 1;
+                    }
+                    
+                    if (c.GetEdge(2) == null)
+                    {
+                        c.SetEdge(2, _edges[ep++]);
+                        c.GetEdge(2).axisI = 0;
+                    }
+                    else
+                    {
+                        topo++;
+                    }
 
-
+                    if (c.GetEdge(3) == null)
+                    {
+                        c.SetEdge(3, _edges[ep++]);
+                        c.GetEdge(3).axisI = 1;
+                    }
+                    
+                    if (c.GetEdge(4) == null)
+                    {
+                        c.SetEdge(4, _edges[ep++]);
+                        c.GetEdge(4).axisI = 0;
+                    }
+                    
+                    if (c.GetEdge(7) == null)
+                    {
+                        c.SetEdge(7, _edges[ep++]);
+                        c.GetEdge(7).axisI = 1;
+                    }
+                    
+                    if (c.GetEdge(8) == null)
+                    {
+                        c.SetEdge(8, _edges[ep++]);
+                        c.GetEdge(8).axisI = 2;
+                    }
+                    
+                    if (c.GetEdge(9) == null)
+                    {
+                        c.SetEdge(9, _edges[ep++]);
+                        c.GetEdge(9).axisI = 2;
+                    }
+                    
+                    if (c.GetEdge(11) == null)
+                    {
+                        c.SetEdge(11, _edges[ep++]);
+                        c.GetEdge(11).axisI = 2;
+                    }
                 }
             }
         }
-
     }
 
     /*Courtesy of http://local.wasp.uwa.edu.au/~pbourke/geometry/polygonise/*/
