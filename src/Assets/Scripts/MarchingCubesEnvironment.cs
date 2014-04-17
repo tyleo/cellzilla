@@ -1,4 +1,21 @@
-﻿/**
+﻿/*
+ * This is an update of the Metaball implementation provided by Brian R. Cowan. Brian's original
+ * header comment is posted below. The original implementation was obtained from
+ * http://wiki.unity3d.com/index.php?title=MetaBalls.
+ * 
+ * This update aims to improve the implementation
+ * by allowing metaballs to be created as Unity GameObjects instead of calculating their attributes
+ * from within this class.
+ * 
+ * A simulation of a cell was provided with our original update to demonstrate how this  algorithm
+ * may be used.
+ * 
+ * - Tyler Wolf Leonhardt and Lisa Lau
+ * /
+
+/**
+ * ORIGINAL HEADER:
+ * 
  * Metaball implementation by Brian R. Cowan http://www.briancowan.net/ 
  * Metaball tables at http://local.wasp.uwa.edu.au/~pbourke/geometry/polygonise/
  * Examples at http://www.briancowan.net/unity/fx
@@ -17,29 +34,24 @@
  * Mail any comments to: brian@briancowan.net (Vector or Vector426 on #otee-unity)
  *
  * Cheers & God bless
+ * 
+ * PS:
+ * There is a small bug in this code that produces 1 to 4 overlapping triangles 
+ * mostly in the centre of the mesh, sometimes on a side resulting in a white patch
+ * it appears in other shapes than Metaballs.
+ * if it's too hard to fix the code, scanning duplicate triangles is possible
+ * the duplicates occur in the 1st 4 triangles and anywhere after
+ * it seems the code doesn't check duplicates for the 1st 4 triangles
+ * the above issue is probably relate to the march() function doCube 1x time
+ * and then sending recurse() function docube in the same space
+ *  so perhaps delete   if(doCube(cube)) {  condition in march() and just recurse
+ * also it processes 278700 pts instead of 32768 pts if made to march all spaces
  */
 
-/**
-*There is a small bug in this code that produces 1 to 4 overlapping triangles 
-*mostly in the centre of the mesh, sometimes on a side resulting in a white patch
-*it appears in other shapes than Metaballs.
-*if it's too hard to fix the code, scanning duplicate triangles is possible
-*the duplicates occur in the 1st 4 triangles and anywhere after
-*it seems the code doesn't check duplicates for the 1st 4 triangles
-*the above issue is probably relate to the march() function doCube 1x time
-*and then sending recurse() function docube in the same space
-* so perhaps delete   if(doCube(cube)) {  condition in march() and just recurse
-*also it processes 278700 pts instead of 32768 pts if made to march all spaces
-*/
-
-// Modified by Tyler Wolf Leonahardt and Lisa Lau
-// Obtained from http://wiki.unity3d.com/index.php?title=MetaBalls
-
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public sealed class MCBlob :
+public sealed class MarchingCubesEnvironment :
     MonoBehaviour
 {
     private Subsphere[] _subspheres;
@@ -47,78 +59,80 @@ public sealed class MCBlob :
     /*Amount of cubes in X/Y/Z directions, Dimension will always be from -.5f to .5f in XYZ
       remember to call Regen() if changing!
     */
-    int _dimX = 40;
-    int _dimY = 40;
-    int _dimZ = 40;
+    int _cubesAlongX = 40;
+    int _cubesAlongY = 40;
+    int _cubesAlongZ = 40;
 
-    public int dimX
+    public int CubesAlongX
     {
-        get { return _dimX; }
-        set { _dimX = value; Regen(); }
+        get { return _cubesAlongX; }
+        set { _cubesAlongX = value; Regen(); }
     }
-    public int dimY
+
+    public int CubesAlongY
     {
-        get { return _dimY; }
-        set { _dimY = value; Regen(); }
+        get { return _cubesAlongY; }
+        set { _cubesAlongY = value; Regen(); }
     }
-    public int dimZ
+
+    public int CubesAlongZ
     {
-        get { return _dimZ; }
-        set { _dimZ = value; Regen(); }
+        get { return _cubesAlongZ; }
+        set { _cubesAlongZ = value; Regen(); }
     }
     
 
     /*Cutoff intensity, where the surface of mesh will be created*/
-    public float isoLevel = .5f;
+    public float _threshold = .5f;
 
     /*Scratch buffers for Vertices/Normals/Tris */
-    private Vector3[] newVertex;
-    private Vector3[] newNormal;
-    private Vector2[] newUV;
-    private int[] newTri;
+    private Vector3[] _newVertices;
+    private Vector3[] _newNormals;
+    private Vector2[] _newUVs;
+    private int[] _newTriangles;
 
     /*Pointer into scratch buffers for tris and vertices(also used for UVs and Normals)
       at the end of a frame it will give the total amount of each*/
-    private int triP = 0;
-    private int vertP = 0;
+    private int _triangleIndex = 0;
+    private int _vertexIndex = 0;
 
     /*Generated at startup for dimX,dimY,dimZ, 
       all the points, edges, cubes in the 3D lattice*/
-    private mcPoint[] _points;
-    private mcEdge[] _edges;
-    private mcCube[] _cubes;
+    private LatticePoint[] _points;
+    private LatticeEdge[] _edges;
+    private LatticeCube[] _cubes;
 
 
     /*Scratch buffers for use within functions, to eliminate the usage of new almost entirely each frame*/
-    private Vector3[] tada;
-    private Vector2[] tada2;
-    private int tadac, tadac2;
-    private int tadam = 50000;
+    private Vector3[] _tada;
+    private Vector2[] _tada2;
+    private int _tadac, _tadac2;
+    private int _tadam = 50000;
 
     /*Current frame counter*/
-    private int pctr = 0;
+    private int _currentFrameCounter = 0;
 
     /*Cube Class*/
-    private class mcCube
+    private class LatticeCube
     {
 
-        public mcCube()
+        public LatticeCube()
         {
             cntr = 0;
-            edges = new mcEdge[12];
+            edges = new LatticeEdge[12];
             for (int i = 0; i < 12; i++)
             {
                 edges[i] = null;
             }
-            points = new mcPoint[8];
+            points = new LatticePoint[8];
         }
 
 
         /*12 Edges, see march() for their positioning*/
-        public mcEdge[] edges;
+        public LatticeEdge[] edges;
 
         /*8 Points, see march() for their positioning*/
-        public mcPoint[] points;
+        public LatticePoint[] points;
 
         /*last frame this cube was processed*/
         public int cntr;
@@ -130,7 +144,7 @@ public sealed class MCBlob :
     }
 
     /*Edge class*/
-    private class mcEdge
+    private class LatticeEdge
     {
 
         /*the vector of the calculated point*/
@@ -145,7 +159,7 @@ public sealed class MCBlob :
         /*axis of edge*/
         public int axisI;
 
-        public mcEdge(int axisI)
+        public LatticeEdge(int axisI)
         {
             this.cntr = 0;
             this.axisI = axisI;
@@ -154,7 +168,7 @@ public sealed class MCBlob :
     }
 
     /*Point (in lattice) class*/
-    public class mcPoint
+    public class LatticePoint
     {
 
 
@@ -164,7 +178,7 @@ public sealed class MCBlob :
 
         public int px, py, pz;
 
-        private MCBlob mcblob;
+        private MarchingCubesEnvironment mcblob;
 
         public int cntr;
 
@@ -172,7 +186,7 @@ public sealed class MCBlob :
         public float[] index;
 
 
-        public mcPoint(float x, float y, float z, int px, int py, int pz, MCBlob thismcblob)
+        public LatticePoint(float x, float y, float z, int px, int py, int pz, MarchingCubesEnvironment thismcblob)
         {
             this.index = new float[3];
             index[0] = x; index[1] = y; index[2] = z;
@@ -207,9 +221,9 @@ public sealed class MCBlob :
         public float i()
         {
             float pwr;
-            if (cntr < mcblob.pctr)
+            if (cntr < mcblob._currentFrameCounter)
             {
-                cntr = mcblob.pctr;
+                cntr = mcblob._currentFrameCounter;
                 pwr = 0f;
                 for (int jc = 0; jc < mcblob._subspheres.Length; jc++)
                 {
@@ -244,13 +258,13 @@ public sealed class MCBlob :
     private Vector3 calcNormal(Vector3 pnt)
     {
         int jc;
-        Vector3 result = tada[tadac++];
+        Vector3 result = _tada[_tadac++];
         result.x = 0; result.y = 0; result.z = 0;
         for (jc = 0; jc < _subspheres.Length; jc++)
         {
             Subsphere pb = _subspheres[jc];
 
-            Vector3 current = tada[tadac++];
+            Vector3 current = _tada[_tadac++];
             current.x = pnt.x - pb.transform.position.x;
             current.y = pnt.y - pb.transform.position.y;
             current.z = pnt.z - pb.transform.position.z;
@@ -263,24 +277,24 @@ public sealed class MCBlob :
 
 
     /*Given xyz indices into lattice, return referring cube */
-    private mcCube getCube(int x, int y, int z)
+    private LatticeCube getCube(int x, int y, int z)
     {
-        if (x < 0 || y < 0 || z < 0 || x >= dimX || y >= dimY || z >= dimZ) { return null; }
-        return _cubes[z + (y * (dimZ)) + (x * (dimZ) * (dimY))];
+        if (x < 0 || y < 0 || z < 0 || x >= CubesAlongX || y >= CubesAlongY || z >= CubesAlongZ) { return null; }
+        return _cubes[z + (y * (CubesAlongZ)) + (x * (CubesAlongZ) * (CubesAlongY))];
     }
 
     /*Given xyz indices into lattice, return referring vertex */
-    private mcPoint getPoint(int x, int y, int z)
+    private LatticePoint getPoint(int x, int y, int z)
     {
-        if (x < 0 || y < 0 || z < 0 || x > dimX || y > dimY || z > dimZ) { return null; }
-        return _points[z + (y * (dimZ + 1)) + (x * (dimZ + 1) * (dimY + 1))];
+        if (x < 0 || y < 0 || z < 0 || x > CubesAlongX || y > CubesAlongY || z > CubesAlongZ) { return null; }
+        return _points[z + (y * (CubesAlongZ + 1)) + (x * (CubesAlongZ + 1) * (CubesAlongY + 1))];
     }
 
     /*Return the interpolated position of point on an Axis*/
-    private Vector3 mPos(mcPoint a, mcPoint b, int axisI)
+    private Vector3 mPos(LatticePoint a, LatticePoint b, int axisI)
     {
-        float mu = (isoLevel - a.i()) / (b.i() - a.i());
-        Vector3 tmp = tada[tadac++];
+        float mu = (_threshold - a.i()) / (b.i() - a.i());
+        Vector3 tmp = _tada[_tadac++];
         tmp[0] = a[0]; tmp[1] = a[1]; tmp[2] = a[2];
         tmp[axisI] = a[axisI] + (mu * (b[axisI] - a[axisI]));
 
@@ -290,19 +304,19 @@ public sealed class MCBlob :
     /*If an edge of a cube has not been processed, find the interpolated point for 
       that edge (assumes the boundary crosses the edge) and compute the normal
       for that point, as well as assigning it an index into the vertex list*/
-    private void genEdge(mcCube cube, int edgei, int p1i, int p2i)
+    private void genEdge(LatticeCube cube, int edgei, int p1i, int p2i)
     {
         Vector3 v;
-        mcEdge e = cube.edges[edgei];
-        if (e.cntr < pctr)
+        LatticeEdge e = cube.edges[edgei];
+        if (e.cntr < _currentFrameCounter)
         {
 
             v = mPos(cube.points[p1i], cube.points[p2i], e.axisI);
             e.v3 = v;
-            e.vi = vertP;
-            newNormal[vertP] = calcNormal(v);
-            newVertex[vertP++] = v;
-            e.cntr = pctr;
+            e.vi = _vertexIndex;
+            _newNormals[_vertexIndex] = calcNormal(v);
+            _newVertices[_vertexIndex++] = v;
+            e.cntr = _currentFrameCounter;
 
         }
 
@@ -315,23 +329,23 @@ public sealed class MCBlob :
       at the point of crossing. Then add all the triangles that cover the surface
       within the cube.
       Returns true if the surface crosses the cube, false otherwise.*/
-    private bool doCube(mcCube cube)
+    private bool doCube(LatticeCube cube)
     {
         int edgec, vertc;
         edgec = 0; vertc = 0;
 
         int cubeIndex = 0;
 
-        if (cube.points[0].i() > isoLevel) { cubeIndex |= 1; }
-        if (cube.points[1].i() > isoLevel) { cubeIndex |= 2; }
-        if (cube.points[2].i() > isoLevel) { cubeIndex |= 4; }
-        if (cube.points[3].i() > isoLevel) { cubeIndex |= 8; }
-        if (cube.points[4].i() > isoLevel) { cubeIndex |= 16; }
-        if (cube.points[5].i() > isoLevel) { cubeIndex |= 32; }
-        if (cube.points[6].i() > isoLevel) { cubeIndex |= 64; }
-        if (cube.points[7].i() > isoLevel) { cubeIndex |= 128; }
+        if (cube.points[0].i() > _threshold) { cubeIndex |= 1; }
+        if (cube.points[1].i() > _threshold) { cubeIndex |= 2; }
+        if (cube.points[2].i() > _threshold) { cubeIndex |= 4; }
+        if (cube.points[3].i() > _threshold) { cubeIndex |= 8; }
+        if (cube.points[4].i() > _threshold) { cubeIndex |= 16; }
+        if (cube.points[5].i() > _threshold) { cubeIndex |= 32; }
+        if (cube.points[6].i() > _threshold) { cubeIndex |= 64; }
+        if (cube.points[7].i() > _threshold) { cubeIndex |= 128; }
 
-        int edgeIndex = edgeTable[cubeIndex];
+        int edgeIndex = _edgeTable[cubeIndex];
         edgec += edgeIndex;
         if (edgeIndex != 0)
         {
@@ -350,14 +364,14 @@ public sealed class MCBlob :
 
             int tpi = 0;
             int tmp;
-            while (triTable[cubeIndex, tpi] != -1)
+            while (_triangleTable[cubeIndex, tpi] != -1)
             {
-                tmp = cube.edges[triTable[cubeIndex, tpi + 2]].vi;
-                newTri[triP++] = tmp; vertc += tmp;
-                tmp = cube.edges[triTable[cubeIndex, tpi + 1]].vi;
-                newTri[triP++] = tmp; vertc += tmp;
-                tmp = cube.edges[triTable[cubeIndex, tpi]].vi;
-                newTri[triP++] = tmp; vertc += tmp;
+                tmp = cube.edges[_triangleTable[cubeIndex, tpi + 2]].vi;
+                _newTriangles[_triangleIndex++] = tmp; vertc += tmp;
+                tmp = cube.edges[_triangleTable[cubeIndex, tpi + 1]].vi;
+                _newTriangles[_triangleIndex++] = tmp; vertc += tmp;
+                tmp = cube.edges[_triangleTable[cubeIndex, tpi]].vi;
+                _newTriangles[_triangleIndex++] = tmp; vertc += tmp;
                 tpi += 3;
             }
 
@@ -371,26 +385,26 @@ public sealed class MCBlob :
 
     /*Recurse all the neighboring cubes where thy contain part of the surface*/
     /*Counter to see how many cubes where processed*/
-    int cubec;
-    private void recurseCube(mcCube cube)
+    int _cubeCounter;
+    private void recurseCube(LatticeCube cube)
     {
-        mcCube nCube;
+        LatticeCube nCube;
         int jx, jy, jz;
         jx = cube.px; jy = cube.py; jz = cube.pz;
-        cubec++;
+        _cubeCounter++;
         /* Test 6 axis cases. This seems to work well, no need to test all 26 cases */
         nCube = getCube(jx + 1, jy, jz);
-        if (nCube != null && nCube.cntr < pctr) { nCube.cntr = pctr; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.cntr < _currentFrameCounter) { nCube.cntr = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
         nCube = getCube(jx - 1, jy, jz);
-        if (nCube != null && nCube.cntr < pctr) { nCube.cntr = pctr; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.cntr < _currentFrameCounter) { nCube.cntr = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
         nCube = getCube(jx, jy + 1, jz);
-        if (nCube != null && nCube.cntr < pctr) { nCube.cntr = pctr; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.cntr < _currentFrameCounter) { nCube.cntr = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
         nCube = getCube(jx, jy - 1, jz);
-        if (nCube != null && nCube.cntr < pctr) { nCube.cntr = pctr; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.cntr < _currentFrameCounter) { nCube.cntr = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
         nCube = getCube(jx, jy, jz + 1);
-        if (nCube != null && nCube.cntr < pctr) { nCube.cntr = pctr; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.cntr < _currentFrameCounter) { nCube.cntr = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
         nCube = getCube(jx, jy, jz - 1);
-        if (nCube != null && nCube.cntr < pctr) { nCube.cntr = pctr; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.cntr < _currentFrameCounter) { nCube.cntr = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
 
 
 
@@ -408,22 +422,22 @@ public sealed class MCBlob :
         for (i = 0; i < _subspheres.Length; i++)
         {
             Subsphere pb = _subspheres[i];
-            jx = (int)((pb.transform.position.x + .5f) * dimX);
-            jy = (int)((pb.transform.position.y + .5f) * dimY);
-            jz = (int)((pb.transform.position.z + .5f) * dimZ);
+            jx = (int)((pb.transform.position.x + .5f) * CubesAlongX);
+            jy = (int)((pb.transform.position.y + .5f) * CubesAlongY);
+            jz = (int)((pb.transform.position.z + .5f) * CubesAlongZ);
 
 
             while (jz >= 0)
             {
-                mcCube cube = getCube(jx, jy, jz);
-                if (cube != null && cube.cntr < pctr)
+                LatticeCube cube = getCube(jx, jy, jz);
+                if (cube != null && cube.cntr < _currentFrameCounter)
                 {
                     if (doCube(cube))
                     {
                         recurseCube(cube);
                         jz = -1;
                     }
-                    cube.cntr = pctr;
+                    cube.cntr = _currentFrameCounter;
                 }
                 else
                 {
@@ -440,13 +454,9 @@ public sealed class MCBlob :
 
 
     /*Unity and Sample Specific, scratch caches to not reallocate vertices/tris/etc...*/
-    Vector3[] fv, fn;
-    int[] ft;
-    Vector2[] fuv;
-
-    //Last Status Post
-    private float lt = 0f;
-
+    Vector3[] _scratchVertices, _scratchNormals;
+    int[] _scratchTriangles;
+    Vector2[] _scratchUVs;
 
     /*Unity and Sample Specific*/
     private void renderMesh()
@@ -455,32 +465,32 @@ public sealed class MCBlob :
 
 
         /*Clear the Vertices that don't have any real information assigned to them */
-        for (i = 0; i < vertP; i++)
+        for (i = 0; i < _vertexIndex; i++)
         {
-            fv[i] = newVertex[i]; fn[i] = newNormal[i];
-            fuv[i] = tada2[tadac2++];
-            Vector3 fuvt = transform.TransformPoint(fn[i]).normalized;
-            fuv[i].x = (fuvt.x + 1f) * .5f; fuv[i].y = (fuvt.y + 1f) * .5f;
+            _scratchVertices[i] = _newVertices[i]; _scratchNormals[i] = _newNormals[i];
+            _scratchUVs[i] = _tada2[_tadac2++];
+            Vector3 fuvt = transform.TransformPoint(_scratchNormals[i]).normalized;
+            _scratchUVs[i].x = (fuvt.x + 1f) * .5f; _scratchUVs[i].y = (fuvt.y + 1f) * .5f;
         }
 
-        for (i = vertP; i < fv.Length; i++)
+        for (i = _vertexIndex; i < _scratchVertices.Length; i++)
         {
-            fv[i][0] = 0; fn[i][0] = 0; fuv[i][0] = 0;
-            fv[i][1] = 0; fn[i][1] = 0; fuv[i][1] = 0;
-            fv[i][2] = 0;
+            _scratchVertices[i][0] = 0; _scratchNormals[i][0] = 0; _scratchUVs[i][0] = 0;
+            _scratchVertices[i][1] = 0; _scratchNormals[i][1] = 0; _scratchUVs[i][1] = 0;
+            _scratchVertices[i][2] = 0;
         }
 
 
-        for (i = 0; i < triP; i++) { ft[i] = newTri[i]; }
-        for (i = triP; i < ft.Length; i++) { ft[i] = 0; }
+        for (i = 0; i < _triangleIndex; i++) { _scratchTriangles[i] = _newTriangles[i]; }
+        for (i = _triangleIndex; i < _scratchTriangles.Length; i++) { _scratchTriangles[i] = 0; }
 
         Mesh mesh = ((MeshFilter)GetComponent("MeshFilter")).mesh;
 
 
-        mesh.vertices = fv;
-        mesh.uv = fuv;
-        mesh.triangles = ft;
-        mesh.normals = fn;
+        mesh.vertices = _scratchVertices;
+        mesh.uv = _scratchUVs;
+        mesh.triangles = _scratchTriangles;
+        mesh.normals = _scratchNormals;
 
         /*For Disco Ball Effect*/
         //mesh.RecalculateNormals();	
@@ -491,12 +501,12 @@ public sealed class MCBlob :
     /*What is needed to do every frame for the calculation and rendering of the Metaballs*/
     void doFrame()
     {
-        tadac = 0;
-        tadac2 = 0;
-        cubec = 0;
-        pctr++;
-        triP = 0;
-        vertP = 0;
+        _tadac = 0;
+        _tadac2 = 0;
+        _cubeCounter = 0;
+        _currentFrameCounter++;
+        _triangleIndex = 0;
+        _vertexIndex = 0;
         march();
         renderMesh();
     }
@@ -509,19 +519,17 @@ public sealed class MCBlob :
     }
 
     //Unity and Sample specific
-    void Update()
+    public void Update()
     {
         doFrame();
     }
 
     //Unity and Sample Specific
-    void Start()
+    public void Start()
     {
         _subspheres = GetComponent<SubsphereSeeker>().GetSubspheres().ToArray();
 
-        lt = 0f;
-
-        isoLevel = 1.95f;
+        _threshold = 1.95f;
 
         Regen();
     }
@@ -544,54 +552,54 @@ public sealed class MCBlob :
         int i;
         float jx, jy, jz;
         int ijx, ijy, ijz;
-        int pointCount = ((dimX + 1) * (dimY + 1) * (dimZ + 1));
-        int cubeCount = (dimX * dimY * dimZ);
-        int edgeCount = (cubeCount * 3) + ((2 * dimX * dimY) + (2 * dimX * dimZ) + (2 * dimY * dimZ)) + dimX + dimY + dimZ; //Ideal Edge Count
-        int edgeNow = edgeCount + ((dimX * dimY) + (dimY * dimZ) + (dimZ * dimX)) * 2; //Haven't combined the edges of the 0 index borders
+        int pointCount = ((CubesAlongX + 1) * (CubesAlongY + 1) * (CubesAlongZ + 1));
+        int cubeCount = (CubesAlongX * CubesAlongY * CubesAlongZ);
+        int edgeCount = (cubeCount * 3) + ((2 * CubesAlongX * CubesAlongY) + (2 * CubesAlongX * CubesAlongZ) + (2 * CubesAlongY * CubesAlongZ)) + CubesAlongX + CubesAlongY + CubesAlongZ; //Ideal Edge Count
+        int edgeNow = edgeCount + ((CubesAlongX * CubesAlongY) + (CubesAlongY * CubesAlongZ) + (CubesAlongZ * CubesAlongX)) * 2; //Haven't combined the edges of the 0 index borders
 
         //Should be a pretty safe amount
-        int tmpv = (int)(dimX * dimY * dimZ / 7);
-        tadam = tmpv * 4;
-        fv = new Vector3[tmpv];
-        fn = new Vector3[tmpv];
-        fuv = new Vector2[tmpv];
+        int tmpv = (int)(CubesAlongX * CubesAlongY * CubesAlongZ / 7);
+        _tadam = tmpv * 4;
+        _scratchVertices = new Vector3[tmpv];
+        _scratchNormals = new Vector3[tmpv];
+        _scratchUVs = new Vector2[tmpv];
 
 
         //Pretty save amount of Tris as well
-        ft = new int[(int)(cubeCount * .75)];
+        _scratchTriangles = new int[(int)(cubeCount * .75)];
 
-        newVertex = new Vector3[300000];
-        newTri = new int[300000];
-        newNormal = new Vector3[300000];
-        tada = new Vector3[tadam * 2];
-        tada2 = new Vector2[tadam * 2];
+        _newVertices = new Vector3[300000];
+        _newTriangles = new int[300000];
+        _newNormals = new Vector3[300000];
+        _tada = new Vector3[_tadam * 2];
+        _tada2 = new Vector2[_tadam * 2];
 
         //newUV=new Vector2[300000];
 
-        _cubes = new mcCube[cubeCount];
-        _points = new mcPoint[pointCount];
-        _edges = new mcEdge[edgeNow];
+        _cubes = new LatticeCube[cubeCount];
+        _points = new LatticePoint[pointCount];
+        _edges = new LatticeEdge[edgeNow];
 
-        for (i = 0; i < tadam * 2; i++)
+        for (i = 0; i < _tadam * 2; i++)
         {
-            tada[i] = new Vector3(0, 0, 0);
-            tada2[i] = new Vector2(0, 0);
+            _tada[i] = new Vector3(0, 0, 0);
+            _tada2[i] = new Vector2(0, 0);
         }
 
         for (i = 0; i < edgeNow; i++)
         {
-            _edges[i] = new mcEdge(-1);
+            _edges[i] = new LatticeEdge(-1);
         }
 
 
         i = 0;
-        for (jx = 0.0f; jx <= dimX; jx++)
+        for (jx = 0.0f; jx <= CubesAlongX; jx++)
         {
-            for (jy = 0.0f; jy <= dimY; jy++)
+            for (jy = 0.0f; jy <= CubesAlongY; jy++)
             {
-                for (jz = 0.0f; jz <= dimZ; jz++)
+                for (jz = 0.0f; jz <= CubesAlongZ; jz++)
                 {
-                    _points[i] = new mcPoint((jx / dimX) - .5f, (jy / dimY) - .5f, (jz / dimZ) - .5f, (int)jx, (int)jy, (int)jz, this);
+                    _points[i] = new LatticePoint((jx / CubesAlongX) - .5f, (jy / CubesAlongY) - .5f, (jz / CubesAlongZ) - .5f, (int)jx, (int)jy, (int)jz, this);
 
                     i++;
                 }
@@ -600,22 +608,22 @@ public sealed class MCBlob :
 
         for (i = 0; i < cubeCount; i++)
         {
-            _cubes[i] = new mcCube();
+            _cubes[i] = new LatticeCube();
         }
         int ep = 0;
 
-        mcCube c;
-        mcCube tc;
+        LatticeCube c;
+        LatticeCube tc;
 
         i = 0;
 
 
         int topo = 0;
-        for (ijx = 0; ijx < dimX; ijx++)
+        for (ijx = 0; ijx < CubesAlongX; ijx++)
         {
-            for (ijy = 0; ijy < dimY; ijy++)
+            for (ijy = 0; ijy < CubesAlongY; ijy++)
             {
-                for (ijz = 0; ijz < dimZ; ijz++)
+                for (ijz = 0; ijz < CubesAlongZ; ijz++)
                 {
 
 
@@ -625,7 +633,7 @@ public sealed class MCBlob :
 
 
 
-                    mcPoint[] cpt = c.points;
+                    LatticePoint[] cpt = c.points;
                     cpt[0] = getPoint(ijx, ijy, ijz);
                     cpt[1] = getPoint(ijx + 1, ijy, ijz);
                     cpt[2] = getPoint(ijx + 1, ijy + 1, ijz);
@@ -636,7 +644,7 @@ public sealed class MCBlob :
                     cpt[7] = getPoint(ijx, ijy + 1, ijz + 1);
 
 
-                    mcEdge[] e = c.edges;
+                    LatticeEdge[] e = c.edges;
 
 
                     e[5] = _edges[ep++]; e[5].axisI = 1;
@@ -708,7 +716,7 @@ public sealed class MCBlob :
     }
 
     /*Courtesy of http://local.wasp.uwa.edu.au/~pbourke/geometry/polygonise/*/
-    private int[,] triTable = new int[,]
+    private int[,] _triangleTable = new int[,]
         {{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
         {0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
         {0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
@@ -968,7 +976,7 @@ public sealed class MCBlob :
         {0, 3, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
         {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
 
-    private int[] edgeTable = new int[] {
+    private int[] _edgeTable = new int[] {
         0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
         0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
         0x190, 0x99 , 0x393, 0x29a, 0x596, 0x49f, 0x795, 0x69c,
