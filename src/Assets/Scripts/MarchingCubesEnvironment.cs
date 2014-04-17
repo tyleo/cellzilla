@@ -116,7 +116,15 @@ public sealed class MarchingCubesEnvironment :
     private class LatticeCube
     {
         private readonly LatticeEdge[] _edges = new LatticeEdge[12];
-        
+        private readonly LatticePoint[] _points = new LatticePoint[8];
+        private int _lastFrameProcessed = 0;
+
+        public int LatticeXIndex { get; set; }
+        public int LatticeYIndex { get; set; }
+        public int LatticeZIndex { get; set; }
+
+        public int LastFrameProcessed { get { return _lastFrameProcessed; } set { _lastFrameProcessed = value; } }
+
         public LatticeEdge GetEdge(int edgeIndex)
         {
             return _edges[edgeIndex];
@@ -127,23 +135,15 @@ public sealed class MarchingCubesEnvironment :
             _edges[edgeIndex] = edge;
         }
 
-        public LatticeCube()
+        public LatticePoint GetPoint(int pointIndex)
         {
-            cntr = 0;
-            points = new LatticePoint[8];
+            return _points[pointIndex];
         }
 
-
-        /*8 Points, see march() for their positioning*/
-        public LatticePoint[] points;
-
-        /*last frame this cube was processed*/
-        public int cntr;
-
-        /*Pointers into the latice array*/
-        public int px;
-        public int py;
-        public int pz;
+        public void SetPoint(int pointIndex, LatticePoint point)
+        {
+            _points[pointIndex] = point;
+        }
     }
 
     /*Edge class*/
@@ -302,7 +302,7 @@ public sealed class MarchingCubesEnvironment :
         if (e.cntr < _currentFrameCounter)
         {
 
-            v = mPos(cube.points[p1i], cube.points[p2i], e.axisI);
+            v = mPos(cube.GetPoint(p1i), cube.GetPoint(p2i), e.axisI);
             e.v3 = v;
             e.vi = _vertexIndex;
             _newNormals[_vertexIndex] = calcNormal(v);
@@ -327,14 +327,14 @@ public sealed class MarchingCubesEnvironment :
 
         int cubeIndex = 0;
 
-        if (cube.points[0].i() > _threshold) { cubeIndex |= 1; }
-        if (cube.points[1].i() > _threshold) { cubeIndex |= 2; }
-        if (cube.points[2].i() > _threshold) { cubeIndex |= 4; }
-        if (cube.points[3].i() > _threshold) { cubeIndex |= 8; }
-        if (cube.points[4].i() > _threshold) { cubeIndex |= 16; }
-        if (cube.points[5].i() > _threshold) { cubeIndex |= 32; }
-        if (cube.points[6].i() > _threshold) { cubeIndex |= 64; }
-        if (cube.points[7].i() > _threshold) { cubeIndex |= 128; }
+        if (cube.GetPoint(0).i() > _threshold) { cubeIndex |= 1; }
+        if (cube.GetPoint(1).i() > _threshold) { cubeIndex |= 2; }
+        if (cube.GetPoint(2).i() > _threshold) { cubeIndex |= 4; }
+        if (cube.GetPoint(3).i() > _threshold) { cubeIndex |= 8; }
+        if (cube.GetPoint(4).i() > _threshold) { cubeIndex |= 16; }
+        if (cube.GetPoint(5).i() > _threshold) { cubeIndex |= 32; }
+        if (cube.GetPoint(6).i() > _threshold) { cubeIndex |= 64; }
+        if (cube.GetPoint(7).i() > _threshold) { cubeIndex |= 128; }
 
         int edgeIndex = _edgeTable[cubeIndex];
         edgec += edgeIndex;
@@ -381,21 +381,21 @@ public sealed class MarchingCubesEnvironment :
     {
         LatticeCube nCube;
         int jx, jy, jz;
-        jx = cube.px; jy = cube.py; jz = cube.pz;
+        jx = cube.LatticeXIndex; jy = cube.LatticeYIndex; jz = cube.LatticeZIndex;
         _cubeCounter++;
         /* Test 6 axis cases. This seems to work well, no need to test all 26 cases */
         nCube = getCube(jx + 1, jy, jz);
-        if (nCube != null && nCube.cntr < _currentFrameCounter) { nCube.cntr = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
         nCube = getCube(jx - 1, jy, jz);
-        if (nCube != null && nCube.cntr < _currentFrameCounter) { nCube.cntr = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
         nCube = getCube(jx, jy + 1, jz);
-        if (nCube != null && nCube.cntr < _currentFrameCounter) { nCube.cntr = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
         nCube = getCube(jx, jy - 1, jz);
-        if (nCube != null && nCube.cntr < _currentFrameCounter) { nCube.cntr = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
         nCube = getCube(jx, jy, jz + 1);
-        if (nCube != null && nCube.cntr < _currentFrameCounter) { nCube.cntr = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
         nCube = getCube(jx, jy, jz - 1);
-        if (nCube != null && nCube.cntr < _currentFrameCounter) { nCube.cntr = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
 
 
 
@@ -421,14 +421,14 @@ public sealed class MarchingCubesEnvironment :
             while (jz >= 0)
             {
                 LatticeCube cube = getCube(jx, jy, jz);
-                if (cube != null && cube.cntr < _currentFrameCounter)
+                if (cube != null && cube.LastFrameProcessed < _currentFrameCounter)
                 {
                     if (doCube(cube))
                     {
                         recurseCube(cube);
                         jz = -1;
                     }
-                    cube.cntr = _currentFrameCounter;
+                    cube.LastFrameProcessed = _currentFrameCounter;
                 }
                 else
                 {
@@ -620,19 +620,18 @@ public sealed class MarchingCubesEnvironment :
 
                     c = _cubes[i];
                     i++;
-                    c.px = ijx; c.py = ijy; c.pz = ijz;
+                    c.LatticeXIndex = ijx; c.LatticeYIndex = ijy; c.LatticeZIndex = ijz;
 
 
 
-                    LatticePoint[] cpt = c.points;
-                    cpt[0] = getPoint(ijx, ijy, ijz);
-                    cpt[1] = getPoint(ijx + 1, ijy, ijz);
-                    cpt[2] = getPoint(ijx + 1, ijy + 1, ijz);
-                    cpt[3] = getPoint(ijx, ijy + 1, ijz);
-                    cpt[4] = getPoint(ijx, ijy, ijz + 1);
-                    cpt[5] = getPoint(ijx + 1, ijy, ijz + 1);
-                    cpt[6] = getPoint(ijx + 1, ijy + 1, ijz + 1);
-                    cpt[7] = getPoint(ijx, ijy + 1, ijz + 1);
+                    c.SetPoint(0, getPoint(ijx, ijy, ijz));
+                    c.SetPoint(1, getPoint(ijx + 1, ijy, ijz));
+                    c.SetPoint(2, getPoint(ijx + 1, ijy + 1, ijz));
+                    c.SetPoint(3, getPoint(ijx, ijy + 1, ijz));
+                    c.SetPoint(4, getPoint(ijx, ijy, ijz + 1));
+                    c.SetPoint(5, getPoint(ijx + 1, ijy, ijz + 1));
+                    c.SetPoint(6, getPoint(ijx + 1, ijy + 1, ijz + 1));
+                    c.SetPoint(7, getPoint(ijx, ijy + 1, ijz + 1));
 
 
                     c.SetEdge(5, _edges[ep++]);
