@@ -48,6 +48,7 @@
  * also it processes 278700 pts instead of 32768 pts if made to march all spaces
  */
 
+using System;
 using System.Linq;
 using UnityEngine;
 
@@ -83,7 +84,8 @@ public sealed class MarchingCubesEnvironment :
     
 
     /*Cutoff intensity, where the surface of mesh will be created*/
-    public float _threshold = .5f;
+    [SerializeField]
+    private float _threshold = .5f;
 
     /*Scratch buffers for Vertices/Normals/Tris */
     private Vector3[] _newVertices;
@@ -109,10 +111,8 @@ public sealed class MarchingCubesEnvironment :
     private int _tadac, _tadac2;
     private int _tadam = 50000;
 
-    /*Current frame counter*/
     private int _currentFrameCounter = 0;
 
-    /*Cube Class*/
     private class LatticeCube
     {
         private readonly LatticeEdge[] _edges = new LatticeEdge[12];
@@ -146,107 +146,89 @@ public sealed class MarchingCubesEnvironment :
         }
     }
 
-    /*Edge class*/
     private class LatticeEdge
     {
+        private int _lastFrameProcessed = 0;
+        private int _axisOfEdge;
 
-        /*the vector of the calculated point*/
-        public Vector3 v3;
+        public Vector3 EdgePoint { get; set; }
+        public int EdgePointIndex { get; set; }
 
-        /*index into newVertex/Normal/Uv of calculated point*/
-        public int vi;
+        public int LastFrameProcessed { get { return _lastFrameProcessed; } set { _lastFrameProcessed = value; } }
 
-        /*Last frame this was calculated at*/
-        public int cntr;
+        public int AxisOfEdge { get { return _axisOfEdge; } set { _axisOfEdge = value; } }
 
-        /*axis of edge*/
-        public int axisI;
-
-        public LatticeEdge(int axisI)
+        public LatticeEdge(int axisOfEdge)
         {
-            this.cntr = 0;
-            this.axisI = axisI;
+            _axisOfEdge = axisOfEdge;
         }
     }
 
-    /*Point (in lattice) class*/
     public class LatticePoint
     {
-        /*Calculated Intensity or Power of point*/
-        public float _i;
+        private readonly MarchingCubesEnvironment _environment;
+        private int _lastFrameProcessed = 0;
 
-        public int px, py, pz;
+        public float Intensity { get; set; }
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
+        public int LatticeXIndex { get; set; }
+        public int LatticeYIndex { get; set; }
+        public int LatticeZIndex { get; set; }
+        public int LastFrameProcessed { get { return _lastFrameProcessed; } set { _lastFrameProcessed = value; } }
 
-        private MarchingCubesEnvironment mcblob;
-
-        public int cntr;
-
-        /*Object Space position of point*/
-        public float[] index;
-
-        public LatticePoint(float x, float y, float z, int px, int py, int pz, MarchingCubesEnvironment thismcblob)
+        public float GetVectorComponentFromIndex(int index)
         {
-            this.index = new float[3];
-            index[0] = x; index[1] = y; index[2] = z;
-
-            this.px = px;
-            this.py = py;
-            this.pz = pz;
-            this.cntr = 0;
-            this.mcblob = thismcblob;
-        }
-
-        /*Axis letter accessors*/
-        public float x
-        {
-            get { return index[0]; }
-            set { index[0] = value; }
-        }
-        public float y
-        {
-            get { return index[1]; }
-            set { index[1] = value; }
-        }
-        public float z
-        {
-            get { return index[2]; }
-            set { index[2] = value; }
-        }
-
-        /*Calculate the power of a point only if it hasn't been calculated already for this frame*/
-        public float i()
-        {
-            float pwr;
-            if (cntr < mcblob._currentFrameCounter)
+            switch (index)
             {
-                cntr = mcblob._currentFrameCounter;
-                pwr = 0f;
-                for (int jc = 0; jc < mcblob._subspheres.Length; jc++)
+                case 0:
+                    return X;
+                case 1:
+                    return Y;
+                case 2:
+                    return Z;
+                default:
+                    throw new Exception();
+            }
+        }
+
+        /// <remarks>
+        /// This only updates the intensity on a per-frame basis. If the intensity is updated twice
+        /// in a single frame, this function simply returns the intensity.
+        /// </remarks>
+        public float UpdateIntensity()
+        {
+            if (LastFrameProcessed < _environment._currentFrameCounter)
+            {
+                Intensity = 0.0f;
+                LastFrameProcessed = _environment._currentFrameCounter;
+
+                foreach (var subsphere in _environment._subspheres)
                 {
-                    Subsphere pb = this.mcblob._subspheres[jc];
-                    pwr += (1.0f / Mathf.Sqrt(((pb.transform.position.x - this.x) * (pb.transform.position.x - this.x)) + ((pb.transform.position.y - this.y) * (pb.transform.position.y - this.y)) + ((pb.transform.position.z - this.z) * (pb.transform.position.z - this.z)))) * pb.Radius;
+                    Intensity +=
+                        (1.0f / Mathf.Sqrt(((subsphere.transform.position.x - this.X) * (subsphere.transform.position.x - this.X)) +  ((subsphere.transform.position.y - this.Y) * (subsphere.transform.position.y - this.Y)) + ((subsphere.transform.position.z - this.Z) * (subsphere.transform.position.z - this.Z)))) * subsphere.Radius;
                 }
-
-                this._i = pwr;
             }
-            return this._i;
+
+            return Intensity;
         }
 
-        public float this[int idx]
+        public LatticePoint(float x, float y, float z, int latticeXIndex, int latticeYIndex, int latticeZIndex, MarchingCubesEnvironment environment)
         {
-            get
-            {
-                return index[idx];
-            }
-            set
-            {
-                index[idx] = value;
-            }
+            X = x;
+            Y = y;
+            Z = z;
+
+            LatticeXIndex = latticeXIndex;
+            LatticeYIndex = latticeYIndex;
+            LatticeZIndex = latticeZIndex;
+            _environment = environment;
         }
     }
 
     /* Normals are calculated by 'averaging' all the derivatives of the Blob power functions*/
-    private Vector3 calcNormal(Vector3 pnt)
+    private Vector3 CalculateNormal(Vector3 pnt)
     {
         int jc;
         Vector3 result = _tada[_tadac++];
@@ -266,7 +248,6 @@ public sealed class MarchingCubesEnvironment :
         return result.normalized;
     }
 
-
     /*Given xyz indices into lattice, return referring cube */
     private LatticeCube getCube(int x, int y, int z)
     {
@@ -284,10 +265,13 @@ public sealed class MarchingCubesEnvironment :
     /*Return the interpolated position of point on an Axis*/
     private Vector3 mPos(LatticePoint a, LatticePoint b, int axisI)
     {
-        float mu = (_threshold - a.i()) / (b.i() - a.i());
+        float mu = (_threshold - a.UpdateIntensity()) / (b.UpdateIntensity() - a.UpdateIntensity());
         Vector3 tmp = _tada[_tadac++];
-        tmp[0] = a[0]; tmp[1] = a[1]; tmp[2] = a[2];
-        tmp[axisI] = a[axisI] + (mu * (b[axisI] - a[axisI]));
+        tmp[0] = a.X;
+        tmp[1] = a.Y;
+        tmp[2] = a.Z;
+
+        tmp[axisI] = a.GetVectorComponentFromIndex(axisI) + (mu * (b.GetVectorComponentFromIndex(axisI) - a.GetVectorComponentFromIndex(axisI)));
 
         return tmp;
     }
@@ -299,15 +283,15 @@ public sealed class MarchingCubesEnvironment :
     {
         Vector3 v;
         LatticeEdge e = cube.GetEdge(edgei);
-        if (e.cntr < _currentFrameCounter)
+        if (e.LastFrameProcessed < _currentFrameCounter)
         {
 
-            v = mPos(cube.GetPoint(p1i), cube.GetPoint(p2i), e.axisI);
-            e.v3 = v;
-            e.vi = _vertexIndex;
-            _newNormals[_vertexIndex] = calcNormal(v);
+            v = mPos(cube.GetPoint(p1i), cube.GetPoint(p2i), e.AxisOfEdge);
+            e.EdgePoint = v;
+            e.EdgePointIndex = _vertexIndex;
+            _newNormals[_vertexIndex] = CalculateNormal(v);
             _newVertices[_vertexIndex++] = v;
-            e.cntr = _currentFrameCounter;
+            e.LastFrameProcessed = _currentFrameCounter;
 
         }
 
@@ -327,14 +311,14 @@ public sealed class MarchingCubesEnvironment :
 
         int cubeIndex = 0;
 
-        if (cube.GetPoint(0).i() > _threshold) { cubeIndex |= 1; }
-        if (cube.GetPoint(1).i() > _threshold) { cubeIndex |= 2; }
-        if (cube.GetPoint(2).i() > _threshold) { cubeIndex |= 4; }
-        if (cube.GetPoint(3).i() > _threshold) { cubeIndex |= 8; }
-        if (cube.GetPoint(4).i() > _threshold) { cubeIndex |= 16; }
-        if (cube.GetPoint(5).i() > _threshold) { cubeIndex |= 32; }
-        if (cube.GetPoint(6).i() > _threshold) { cubeIndex |= 64; }
-        if (cube.GetPoint(7).i() > _threshold) { cubeIndex |= 128; }
+        if (cube.GetPoint(0).UpdateIntensity() > _threshold) { cubeIndex |= 1; }
+        if (cube.GetPoint(1).UpdateIntensity() > _threshold) { cubeIndex |= 2; }
+        if (cube.GetPoint(2).UpdateIntensity() > _threshold) { cubeIndex |= 4; }
+        if (cube.GetPoint(3).UpdateIntensity() > _threshold) { cubeIndex |= 8; }
+        if (cube.GetPoint(4).UpdateIntensity() > _threshold) { cubeIndex |= 16; }
+        if (cube.GetPoint(5).UpdateIntensity() > _threshold) { cubeIndex |= 32; }
+        if (cube.GetPoint(6).UpdateIntensity() > _threshold) { cubeIndex |= 64; }
+        if (cube.GetPoint(7).UpdateIntensity() > _threshold) { cubeIndex |= 128; }
 
         int edgeIndex = _edgeTable[cubeIndex];
         edgec += edgeIndex;
@@ -357,11 +341,11 @@ public sealed class MarchingCubesEnvironment :
             int tmp;
             while (_triangleTable[cubeIndex, tpi] != -1)
             {
-                tmp = cube.GetEdge(_triangleTable[cubeIndex, tpi + 2]).vi;
+                tmp = cube.GetEdge(_triangleTable[cubeIndex, tpi + 2]).EdgePointIndex;
                 _newTriangles[_triangleIndex++] = tmp; vertc += tmp;
-                tmp = cube.GetEdge(_triangleTable[cubeIndex, tpi + 1]).vi;
+                tmp = cube.GetEdge(_triangleTable[cubeIndex, tpi + 1]).EdgePointIndex;
                 _newTriangles[_triangleIndex++] = tmp; vertc += tmp;
-                tmp = cube.GetEdge(_triangleTable[cubeIndex, tpi]).vi;
+                tmp = cube.GetEdge(_triangleTable[cubeIndex, tpi]).EdgePointIndex;
                 _newTriangles[_triangleIndex++] = tmp; vertc += tmp;
                 tpi += 3;
             }
@@ -396,10 +380,6 @@ public sealed class MarchingCubesEnvironment :
         if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
         nCube = getCube(jx, jy, jz - 1);
         if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
-
-
-
-
     }
 
     /*Go through all the Blobs, and travel from the center outwards in a negative Z direction
@@ -635,11 +615,11 @@ public sealed class MarchingCubesEnvironment :
 
 
                     c.SetEdge(5, _edges[ep++]);
-                    c.GetEdge(5).axisI = 1;
+                    c.GetEdge(5).AxisOfEdge = 1;
                     c.SetEdge(6, _edges[ep++]);
-                    c.GetEdge(6).axisI = 0;
+                    c.GetEdge(6).AxisOfEdge = 0;
                     c.SetEdge(10, _edges[ep++]);
-                    c.GetEdge(10).axisI = 2;
+                    c.GetEdge(10).AxisOfEdge = 2;
 
                     tc = getCube(ijx + 1, ijy, ijz);
                     if (tc != null)
@@ -683,19 +663,19 @@ public sealed class MarchingCubesEnvironment :
                     if (c.GetEdge(0) == null)
                     {
                         c.SetEdge(0, _edges[ep++]);
-                        c.GetEdge(0).axisI = 0;
+                        c.GetEdge(0).AxisOfEdge = 0;
                     }
                     
                     if (c.GetEdge(1) == null)
                     {
                         c.SetEdge(1, _edges[ep++]);
-                        c.GetEdge(1).axisI = 1;
+                        c.GetEdge(1).AxisOfEdge = 1;
                     }
                     
                     if (c.GetEdge(2) == null)
                     {
                         c.SetEdge(2, _edges[ep++]);
-                        c.GetEdge(2).axisI = 0;
+                        c.GetEdge(2).AxisOfEdge = 0;
                     }
                     else
                     {
@@ -705,37 +685,37 @@ public sealed class MarchingCubesEnvironment :
                     if (c.GetEdge(3) == null)
                     {
                         c.SetEdge(3, _edges[ep++]);
-                        c.GetEdge(3).axisI = 1;
+                        c.GetEdge(3).AxisOfEdge = 1;
                     }
                     
                     if (c.GetEdge(4) == null)
                     {
                         c.SetEdge(4, _edges[ep++]);
-                        c.GetEdge(4).axisI = 0;
+                        c.GetEdge(4).AxisOfEdge = 0;
                     }
                     
                     if (c.GetEdge(7) == null)
                     {
                         c.SetEdge(7, _edges[ep++]);
-                        c.GetEdge(7).axisI = 1;
+                        c.GetEdge(7).AxisOfEdge = 1;
                     }
                     
                     if (c.GetEdge(8) == null)
                     {
                         c.SetEdge(8, _edges[ep++]);
-                        c.GetEdge(8).axisI = 2;
+                        c.GetEdge(8).AxisOfEdge = 2;
                     }
                     
                     if (c.GetEdge(9) == null)
                     {
                         c.SetEdge(9, _edges[ep++]);
-                        c.GetEdge(9).axisI = 2;
+                        c.GetEdge(9).AxisOfEdge = 2;
                     }
                     
                     if (c.GetEdge(11) == null)
                     {
                         c.SetEdge(11, _edges[ep++]);
-                        c.GetEdge(11).axisI = 2;
+                        c.GetEdge(11).AxisOfEdge = 2;
                     }
                 }
             }
