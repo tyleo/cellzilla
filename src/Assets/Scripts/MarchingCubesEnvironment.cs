@@ -44,7 +44,7 @@
  * it seems the code doesn't check duplicates for the 1st 4 triangles
  * the above issue is probably relate to the march() function doCube 1x time
  * and then sending recurse() function docube in the same space
- *  so perhaps delete   if(doCube(cube)) {  condition in march() and just recurse
+ * so perhaps delete   if(doCube(cube)) {  condition in march() and just recurse
  * also it processes 278700 pts instead of 32768 pts if made to march all spaces
  */
 
@@ -85,7 +85,7 @@ public sealed class MarchingCubesEnvironment :
 
     /*Cutoff intensity, where the surface of mesh will be created*/
     [SerializeField]
-    private float _threshold = .5f;
+    private float _threshold = 8.0f;
 
     /*Scratch buffers for Vertices/Normals/Tris */
     private Vector3[] _newVertices;
@@ -106,9 +106,8 @@ public sealed class MarchingCubesEnvironment :
 
 
     /*Scratch buffers for use within functions, to eliminate the usage of new almost entirely each frame*/
-    private Vector3[] _tada;
     private Vector2[] _tada2;
-    private int _tadac, _tadac2;
+    private int _tadac2;
     private int _tadam = 50000;
 
     private int _currentFrameCounter = 0;
@@ -168,11 +167,12 @@ public sealed class MarchingCubesEnvironment :
     {
         private readonly MarchingCubesEnvironment _environment;
         private int _lastFrameProcessed = 0;
+        private Vector3 _position;
 
         public float Intensity { get; set; }
-        public float X { get; set; }
-        public float Y { get; set; }
-        public float Z { get; set; }
+        public float X { get { return _position.x; } set { _position.x = value; } }
+        public float Y { get { return _position.y; } set { _position.y = value; } }
+        public float Z { get { return _position.z; } set { _position.z = value; } }
         public int LatticeXIndex { get; set; }
         public int LatticeYIndex { get; set; }
         public int LatticeZIndex { get; set; }
@@ -206,19 +206,15 @@ public sealed class MarchingCubesEnvironment :
 
                 foreach (var subsphere in _environment._subspheres)
                 {
-                    Intensity +=
-                        (1.0f / Mathf.Sqrt(((subsphere.transform.position.x - this.X) * (subsphere.transform.position.x - this.X)) +  ((subsphere.transform.position.y - this.Y) * (subsphere.transform.position.y - this.Y)) + ((subsphere.transform.position.z - this.Z) * (subsphere.transform.position.z - this.Z)))) * subsphere.Radius;
+                    Intensity += subsphere.Radius / (subsphere.transform.position - _position).sqrMagnitude;
                 }
             }
-
             return Intensity;
         }
 
         public LatticePoint(float x, float y, float z, int latticeXIndex, int latticeYIndex, int latticeZIndex, MarchingCubesEnvironment environment)
         {
-            X = x;
-            Y = y;
-            Z = z;
+            _position = new Vector3(x, y, z);
 
             LatticeXIndex = latticeXIndex;
             LatticeYIndex = latticeYIndex;
@@ -227,24 +223,39 @@ public sealed class MarchingCubesEnvironment :
         }
     }
 
-    /* Normals are calculated by 'averaging' all the derivatives of the Blob power functions*/
-    private Vector3 CalculateNormal(Vector3 pnt)
+    public void Start()
     {
-        int jc;
-        Vector3 result = _tada[_tadac++];
-        result.x = 0; result.y = 0; result.z = 0;
-        for (jc = 0; jc < _subspheres.Length; jc++)
-        {
-            Subsphere pb = _subspheres[jc];
+        _subspheres = GetComponent<SubsphereSeeker>().GetSubspheres().ToArray();
 
-            Vector3 current = _tada[_tadac++];
-            current.x = pnt.x - pb.transform.position.x;
-            current.y = pnt.y - pb.transform.position.y;
-            current.z = pnt.z - pb.transform.position.z;
-            float mag = current.magnitude;
-            float pwr = .5f * (1f / (mag * mag * mag)) * pb.Radius;
-            result = result + (current * pwr);
+        Regen();
+    }
+
+    public void Update()
+    {
+        doFrame();
+    }
+
+    // ***************************************************** //
+    // TODO: THIS FUNCTUIN IS WHERE OUR HERO LAST LEFT OFF!  //
+    // ***************************************************** //
+
+    /* Normals are calculated by 'averaging' all the derivatives of the Blob intensities */
+    private Vector3 CalculateNormal(Vector3 point)
+    {
+        Vector3 result = Vector3.zero;
+
+        foreach (var subsphere in _subspheres)
+        {
+            Vector3 currentVector = new Vector3(
+                point.x - subsphere.transform.position.x,
+                point.y - subsphere.transform.position.y,
+                point.z - subsphere.transform.position.z
+            );
+            float magnitude = currentVector.magnitude;
+            float intensity = .5f * (1f / (magnitude * magnitude * magnitude)) * subsphere.Radius;
+            result += currentVector * intensity;
         }
+
         return result.normalized;
     }
 
@@ -266,7 +277,7 @@ public sealed class MarchingCubesEnvironment :
     private Vector3 mPos(LatticePoint a, LatticePoint b, int axisI)
     {
         float mu = (_threshold - a.UpdateIntensity()) / (b.UpdateIntensity() - a.UpdateIntensity());
-        Vector3 tmp = _tada[_tadac++];
+        Vector3 tmp = Vector3.zero;
         tmp[0] = a.X;
         tmp[1] = a.Y;
         tmp[2] = a.Z;
@@ -421,9 +432,6 @@ public sealed class MarchingCubesEnvironment :
 
     }
 
-
-
-
     /*Unity and Sample Specific, scratch caches to not reallocate vertices/tris/etc...*/
     Vector3[] _scratchVertices, _scratchNormals;
     int[] _scratchTriangles;
@@ -472,7 +480,6 @@ public sealed class MarchingCubesEnvironment :
     /*What is needed to do every frame for the calculation and rendering of the Metaballs*/
     void doFrame()
     {
-        _tadac = 0;
         _tadac2 = 0;
         _cubeCounter = 0;
         _currentFrameCounter++;
@@ -487,22 +494,6 @@ public sealed class MarchingCubesEnvironment :
     {
         startObjs();
         startEngine();
-    }
-
-    //Unity and Sample specific
-    public void Update()
-    {
-        doFrame();
-    }
-
-    //Unity and Sample Specific
-    public void Start()
-    {
-        _subspheres = GetComponent<SubsphereSeeker>().GetSubspheres().ToArray();
-
-        _threshold = 1.95f;
-
-        Regen();
     }
 
     /*Unity Specific starting of engine*/
@@ -542,7 +533,6 @@ public sealed class MarchingCubesEnvironment :
         _newVertices = new Vector3[300000];
         _newTriangles = new int[300000];
         _newNormals = new Vector3[300000];
-        _tada = new Vector3[_tadam * 2];
         _tada2 = new Vector2[_tadam * 2];
 
         //newUV=new Vector2[300000];
@@ -553,7 +543,6 @@ public sealed class MarchingCubesEnvironment :
 
         for (i = 0; i < _tadam * 2; i++)
         {
-            _tada[i] = new Vector3(0, 0, 0);
             _tada2[i] = new Vector2(0, 0);
         }
 
