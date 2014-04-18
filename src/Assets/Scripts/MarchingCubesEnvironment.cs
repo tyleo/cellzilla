@@ -197,17 +197,21 @@ public sealed class MarchingCubesEnvironment :
         /// This only updates the intensity on a per-frame basis. If the intensity is updated twice
         /// in a single frame, this function simply returns the intensity.
         /// </remarks>
-        public float UpdateIntensity()
+        public float UpdateIntensityAndNormal()
         {
             if (LastFrameProcessed < _environment._currentFrameCounter)
             {
                 Intensity = 0.0f;
-                LastFrameProcessed = _environment._currentFrameCounter;
 
                 foreach (var subsphere in _environment._subspheres)
                 {
-                    Intensity += subsphere.Radius / (subsphere.transform.position - _position).sqrMagnitude;
+                    var subsphereToPoint = _position - subsphere.transform.position;
+                    var thisIntensity = subsphere.Radius / subsphereToPoint.sqrMagnitude;
+
+                    Intensity += thisIntensity;
                 }
+
+                LastFrameProcessed = _environment._currentFrameCounter;
             }
             return Intensity;
         }
@@ -235,28 +239,20 @@ public sealed class MarchingCubesEnvironment :
         doFrame();
     }
 
-    // ***************************************************** //
-    // TODO: THIS FUNCTUIN IS WHERE OUR HERO LAST LEFT OFF!  //
-    // ***************************************************** //
-
-    /* Normals are calculated by 'averaging' all the derivatives of the Blob intensities */
     private Vector3 CalculateNormal(Vector3 point)
     {
-        Vector3 result = Vector3.zero;
+        Vector3 normal = Vector3.zero;
 
         foreach (var subsphere in _subspheres)
         {
-            Vector3 currentVector = new Vector3(
-                point.x - subsphere.transform.position.x,
-                point.y - subsphere.transform.position.y,
-                point.z - subsphere.transform.position.z
-            );
-            float magnitude = currentVector.magnitude;
-            float intensity = .5f * (1f / (magnitude * magnitude * magnitude)) * subsphere.Radius;
-            result += currentVector * intensity;
-        }
+            var subsphereToPoint = point - subsphere.transform.position;
+            var thisIntensity = subsphere.Radius / subsphereToPoint.sqrMagnitude;
 
-        return result.normalized;
+            normal += subsphereToPoint * thisIntensity;
+        }
+        normal.Normalize();
+
+        return normal;
     }
 
     /*Given xyz indices into lattice, return referring cube */
@@ -276,7 +272,7 @@ public sealed class MarchingCubesEnvironment :
     /*Return the interpolated position of point on an Axis*/
     private Vector3 mPos(LatticePoint a, LatticePoint b, int axisI)
     {
-        float mu = (_threshold - a.UpdateIntensity()) / (b.UpdateIntensity() - a.UpdateIntensity());
+        float mu = (_threshold - a.UpdateIntensityAndNormal()) / (b.UpdateIntensityAndNormal() - a.UpdateIntensityAndNormal());
         Vector3 tmp = Vector3.zero;
         tmp[0] = a.X;
         tmp[1] = a.Y;
@@ -322,14 +318,14 @@ public sealed class MarchingCubesEnvironment :
 
         int cubeIndex = 0;
 
-        if (cube.GetPoint(0).UpdateIntensity() > _threshold) { cubeIndex |= 1; }
-        if (cube.GetPoint(1).UpdateIntensity() > _threshold) { cubeIndex |= 2; }
-        if (cube.GetPoint(2).UpdateIntensity() > _threshold) { cubeIndex |= 4; }
-        if (cube.GetPoint(3).UpdateIntensity() > _threshold) { cubeIndex |= 8; }
-        if (cube.GetPoint(4).UpdateIntensity() > _threshold) { cubeIndex |= 16; }
-        if (cube.GetPoint(5).UpdateIntensity() > _threshold) { cubeIndex |= 32; }
-        if (cube.GetPoint(6).UpdateIntensity() > _threshold) { cubeIndex |= 64; }
-        if (cube.GetPoint(7).UpdateIntensity() > _threshold) { cubeIndex |= 128; }
+        if (cube.GetPoint(0).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 1; }
+        if (cube.GetPoint(1).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 2; }
+        if (cube.GetPoint(2).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 4; }
+        if (cube.GetPoint(3).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 8; }
+        if (cube.GetPoint(4).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 16; }
+        if (cube.GetPoint(5).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 32; }
+        if (cube.GetPoint(6).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 64; }
+        if (cube.GetPoint(7).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 128; }
 
         int edgeIndex = _edgeTable[cubeIndex];
         edgec += edgeIndex;
