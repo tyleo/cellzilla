@@ -102,7 +102,7 @@ public sealed class MarchingCubesEnvironment :
       all the points, edges, cubes in the 3D lattice*/
     private LatticePoint[] _points;
     private LatticeEdge[] _edges;
-    private LatticeCube[] _cubes;
+    private LatticeCube[,,] _cubes;
 
 
     /*Scratch buffers for use within functions, to eliminate the usage of new almost entirely each frame*/
@@ -255,13 +255,6 @@ public sealed class MarchingCubesEnvironment :
         return normal;
     }
 
-    /*Given xyz indices into lattice, return referring cube */
-    private LatticeCube getCube(int x, int y, int z)
-    {
-        if (x < 0 || y < 0 || z < 0 || x >= CubesAlongX || y >= CubesAlongY || z >= CubesAlongZ) { return null; }
-        return _cubes[z + (y * (CubesAlongZ)) + (x * (CubesAlongZ) * (CubesAlongY))];
-    }
-
     /*Given xyz indices into lattice, return referring vertex */
     private LatticePoint getPoint(int x, int y, int z)
     {
@@ -375,17 +368,17 @@ public sealed class MarchingCubesEnvironment :
         jx = cube.LatticeXIndex; jy = cube.LatticeYIndex; jz = cube.LatticeZIndex;
         _cubeCounter++;
         /* Test 6 axis cases. This seems to work well, no need to test all 26 cases */
-        nCube = getCube(jx + 1, jy, jz);
+        nCube = _cubes[jx + 1, jy, jz];
         if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
-        nCube = getCube(jx - 1, jy, jz);
+        nCube = _cubes[jx - 1, jy, jz];
         if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
-        nCube = getCube(jx, jy + 1, jz);
+        nCube = _cubes[jx, jy + 1, jz];
         if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
-        nCube = getCube(jx, jy - 1, jz);
+        nCube = _cubes[jx, jy - 1, jz];
         if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
-        nCube = getCube(jx, jy, jz + 1);
+        nCube = _cubes[jx, jy, jz + 1];
         if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
-        nCube = getCube(jx, jy, jz - 1);
+        nCube = _cubes[jx, jy, jz - 1];
         if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
     }
 
@@ -407,7 +400,7 @@ public sealed class MarchingCubesEnvironment :
 
             while (jz >= 0)
             {
-                LatticeCube cube = getCube(jx, jy, jz);
+                LatticeCube cube = _cubes[jx, jy, jz];
                 if (cube != null && cube.LastFrameProcessed < _currentFrameCounter)
                 {
                     if (doCube(cube))
@@ -533,7 +526,7 @@ public sealed class MarchingCubesEnvironment :
 
         //newUV=new Vector2[300000];
 
-        _cubes = new LatticeCube[cubeCount];
+        _cubes = new LatticeCube[_cubesAlongX, _cubesAlongY, _cubesAlongZ];
         _points = new LatticePoint[pointCount];
         _edges = new LatticeEdge[edgeNow];
 
@@ -562,10 +555,17 @@ public sealed class MarchingCubesEnvironment :
             }
         }
 
-        for (i = 0; i < cubeCount; i++)
+        for (i = 0; i < _cubesAlongX; ++i)
         {
-            _cubes[i] = new LatticeCube();
+            for (int j = 0; j < _cubesAlongY; ++j)
+            {
+                for (int k = 0; k < _cubesAlongZ; ++k)
+                {
+                    _cubes[i, j, k] = new LatticeCube();
+                }
+            }
         }
+
         int ep = 0;
 
         LatticeCube c;
@@ -575,15 +575,15 @@ public sealed class MarchingCubesEnvironment :
 
 
         int topo = 0;
-        for (ijx = 0; ijx < CubesAlongX; ijx++)
+        for (ijx = 0; ijx < CubesAlongX - 1; ijx++)
         {
-            for (ijy = 0; ijy < CubesAlongY; ijy++)
+            for (ijy = 0; ijy < CubesAlongY - 1; ijy++)
             {
-                for (ijz = 0; ijz < CubesAlongZ; ijz++)
+                for (ijz = 0; ijz < CubesAlongZ - 1; ijz++)
                 {
 
 
-                    c = _cubes[i];
+                    c = _cubes[ijx, ijy, ijz];
                     i++;
                     c.LatticeXIndex = ijx; c.LatticeYIndex = ijy; c.LatticeZIndex = ijz;
 
@@ -606,44 +606,26 @@ public sealed class MarchingCubesEnvironment :
                     c.SetEdge(10, _edges[ep++]);
                     c.GetEdge(10).AxisOfEdge = 2;
 
-                    tc = getCube(ijx + 1, ijy, ijz);
-                    if (tc != null)
-                    {
-                        tc.SetEdge(11, c.GetEdge(10));
-                        tc.SetEdge(7, c.GetEdge(5));
-                    }
+                    tc = _cubes[ijx + 1, ijy, ijz];
+                    tc.SetEdge(11, c.GetEdge(10));
+                    tc.SetEdge(7, c.GetEdge(5));
 
-                    tc = getCube(ijx, ijy + 1, ijz);
-                    if (tc != null)
-                    {
-                        tc.SetEdge(4, c.GetEdge(6));
-                        tc.SetEdge(9, c.GetEdge(10));
-                    }
+                    tc = _cubes[ijx, ijy + 1, ijz];
+                    tc.SetEdge(4, c.GetEdge(6));
+                    tc.SetEdge(9, c.GetEdge(10));
 
-                    tc = getCube(ijx, ijy + 1, ijz + 1);
-                    if (tc != null)
-                    {
-                        tc.SetEdge(0, c.GetEdge(6));
-                    }
+                    tc = _cubes[ijx, ijy + 1, ijz + 1];
+                    tc.SetEdge(0, c.GetEdge(6));
 
-                    tc = getCube(ijx + 1, ijy, ijz + 1);
-                    if (tc != null)
-                    {
-                        tc.SetEdge(3, c.GetEdge(5));
-                    }
+                    tc = _cubes[ijx + 1, ijy, ijz + 1];
+                    tc.SetEdge(3, c.GetEdge(5));
 
-                    tc = getCube(ijx + 1, ijy + 1, ijz);
-                    if (tc != null)
-                    {
-                        tc.SetEdge(8, c.GetEdge(10));
-                    }
+                    tc = _cubes[ijx + 1, ijy + 1, ijz];
+                    tc.SetEdge(8, c.GetEdge(10));
 
-                    tc = getCube(ijx, ijy, ijz + 1);
-                    if (tc != null)
-                    {
-                        tc.SetEdge(1, c.GetEdge(5));
-                        tc.SetEdge(2, c.GetEdge(6));
-                    }
+                    tc = _cubes[ijx, ijy, ijz + 1];
+                    tc.SetEdge(1, c.GetEdge(5));
+                    tc.SetEdge(2, c.GetEdge(6));
 
                     if (c.GetEdge(0) == null)
                     {
