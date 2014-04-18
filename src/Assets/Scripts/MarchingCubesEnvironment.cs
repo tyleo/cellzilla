@@ -149,6 +149,7 @@ public sealed class MarchingCubesEnvironment :
         private Vector3 _position;
 
         public float Intensity { get; set; }
+        public Vector3 Position { get { return _position; } }
         public float X { get { return _position.x; } set { _position.x = value; } }
         public float Y { get { return _position.y; } set { _position.y = value; } }
         public float Z { get { return _position.z; } set { _position.z = value; } }
@@ -156,21 +157,6 @@ public sealed class MarchingCubesEnvironment :
         public int LatticeYIndex { get; set; }
         public int LatticeZIndex { get; set; }
         public int LastFrameProcessed { get { return _lastFrameProcessed; } set { _lastFrameProcessed = value; } }
-
-        public float GetVectorComponentFromIndex(int index)
-        {
-            switch (index)
-            {
-                case 0:
-                    return X;
-                case 1:
-                    return Y;
-                case 2:
-                    return Z;
-                default:
-                    throw new Exception();
-            }
-        }
 
         /// <remarks>
         /// This only updates the intensity on a per-frame basis. If the intensity is updated twice
@@ -240,18 +226,17 @@ public sealed class MarchingCubesEnvironment :
         return normal;
     }
 
-    /*Return the interpolated position of point on an Axis*/
-    private Vector3 mPos(LatticePoint a, LatticePoint b, int axisI)
+    private Vector3 InterpolatePoints(LatticePoint from, LatticePoint to, int axisIndex)
     {
-        float mu = (_threshold - a.UpdateIntensity()) / (b.UpdateIntensity() - a.UpdateIntensity());
-        Vector3 tmp = Vector3.zero;
-        tmp[0] = a.X;
-        tmp[1] = a.Y;
-        tmp[2] = a.Z;
+        var result = from.Position;
 
-        tmp[axisI] = a.GetVectorComponentFromIndex(axisI) + (mu * (b.GetVectorComponentFromIndex(axisI) - a.GetVectorComponentFromIndex(axisI)));
+        result[axisIndex] = Mathf.Lerp(
+            from.Position[axisIndex],
+            to.Position[axisIndex], 
+            (_threshold - from.UpdateIntensity()) / (to.UpdateIntensity() - from.UpdateIntensity())
+        );
 
-        return tmp;
+        return result;
     }
 
     /*If an edge of a cube has not been processed, find the interpolated point for 
@@ -263,7 +248,7 @@ public sealed class MarchingCubesEnvironment :
         LatticeEdge e = cube.GetEdge(edgei);
         if (e.LastFrameProcessed < _currentFrameCounter)
         {
-            v = mPos(cube.GetPoint(p1i), cube.GetPoint(p2i), e.AxisOfEdge);
+            v = InterpolatePoints(cube.GetPoint(p1i), cube.GetPoint(p2i), e.AxisOfEdge);
             e.EdgePoint = v;
             e.EdgePointIndex = _vertexIndex;
             _newNormals[_vertexIndex] = CalculateNormal(v);
