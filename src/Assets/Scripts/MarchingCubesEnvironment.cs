@@ -57,33 +57,12 @@ public sealed class MarchingCubesEnvironment :
 {
     private Subsphere[] _subspheres;
 
-    /*Amount of cubes in X/Y/Z directions, Dimension will always be from -.5f to .5f in XYZ
-      remember to call Regen() if changing!
-    */
-    int _cubesAlongX = 40;
-    int _cubesAlongY = 40;
-    int _cubesAlongZ = 40;
-
-    public int CubesAlongX
-    {
-        get { return _cubesAlongX; }
-        set { _cubesAlongX = value; Regen(); }
-    }
-
-    public int CubesAlongY
-    {
-        get { return _cubesAlongY; }
-        set { _cubesAlongY = value; Regen(); }
-    }
-
-    public int CubesAlongZ
-    {
-        get { return _cubesAlongZ; }
-        set { _cubesAlongZ = value; Regen(); }
-    }
-    
-
-    /*Cutoff intensity, where the surface of mesh will be created*/
+    [SerializeField]
+    private int _cubesAlongX = 40;
+    [SerializeField]
+    private int _cubesAlongY = 40;
+    [SerializeField]
+    private int _cubesAlongZ = 40;
     [SerializeField]
     private float _threshold = 8.0f;
 
@@ -258,8 +237,8 @@ public sealed class MarchingCubesEnvironment :
     /*Given xyz indices into lattice, return referring vertex */
     private LatticePoint getPoint(int x, int y, int z)
     {
-        if (x < 0 || y < 0 || z < 0 || x > CubesAlongX || y > CubesAlongY || z > CubesAlongZ) { return null; }
-        return _points[z + (y * (CubesAlongZ + 1)) + (x * (CubesAlongZ + 1) * (CubesAlongY + 1))];
+        if (x < 0 || y < 0 || z < 0 || x > _cubesAlongX || y > _cubesAlongY || z > _cubesAlongZ) { return null; }
+        return _points[z + (y * (_cubesAlongZ + 1)) + (x * (_cubesAlongZ + 1) * (_cubesAlongY + 1))];
     }
 
     /*Return the interpolated position of point on an Axis*/
@@ -393,9 +372,9 @@ public sealed class MarchingCubesEnvironment :
         for (i = 0; i < _subspheres.Length; i++)
         {
             Subsphere pb = _subspheres[i];
-            jx = (int)((pb.transform.position.x + .5f) * CubesAlongX);
-            jy = (int)((pb.transform.position.y + .5f) * CubesAlongY);
-            jz = (int)((pb.transform.position.z + .5f) * CubesAlongZ);
+            jx = (int)((pb.transform.position.x + .5f) * _cubesAlongX);
+            jy = (int)((pb.transform.position.y + .5f) * _cubesAlongY);
+            jz = (int)((pb.transform.position.z + .5f) * _cubesAlongZ);
 
 
             while (jz >= 0)
@@ -503,13 +482,13 @@ public sealed class MarchingCubesEnvironment :
         int i;
         float jx, jy, jz;
         int ijx, ijy, ijz;
-        int pointCount = ((CubesAlongX + 1) * (CubesAlongY + 1) * (CubesAlongZ + 1));
-        int cubeCount = (CubesAlongX * CubesAlongY * CubesAlongZ);
-        int edgeCount = (cubeCount * 3) + ((2 * CubesAlongX * CubesAlongY) + (2 * CubesAlongX * CubesAlongZ) + (2 * CubesAlongY * CubesAlongZ)) + CubesAlongX + CubesAlongY + CubesAlongZ; //Ideal Edge Count
-        int edgeNow = edgeCount + ((CubesAlongX * CubesAlongY) + (CubesAlongY * CubesAlongZ) + (CubesAlongZ * CubesAlongX)) * 2; //Haven't combined the edges of the 0 index borders
+        int pointCount = ((_cubesAlongX + 1) * (_cubesAlongY + 1) * (_cubesAlongZ + 1));
+        int cubeCount = (_cubesAlongX * _cubesAlongY * _cubesAlongZ);
+        int edgeCount = (cubeCount * 3) + ((2 * _cubesAlongX * _cubesAlongY) + (2 * _cubesAlongX * _cubesAlongZ) + (2 * _cubesAlongY * _cubesAlongZ)) + _cubesAlongX + _cubesAlongY + _cubesAlongZ; //Ideal Edge Count
+        int edgeNow = edgeCount + ((_cubesAlongX * _cubesAlongY) + (_cubesAlongY * _cubesAlongZ) + (_cubesAlongZ * _cubesAlongX)) * 2; //Haven't combined the edges of the 0 index borders
 
         //Should be a pretty safe amount
-        int tmpv = (int)(CubesAlongX * CubesAlongY * CubesAlongZ / 7);
+        int tmpv = (int)(_cubesAlongX * _cubesAlongY * _cubesAlongZ / 7);
         _tadam = tmpv * 4;
         _scratchVertices = new Vector3[tmpv];
         _scratchNormals = new Vector3[tmpv];
@@ -542,13 +521,13 @@ public sealed class MarchingCubesEnvironment :
 
 
         i = 0;
-        for (jx = 0.0f; jx <= CubesAlongX; jx++)
+        for (jx = 0.0f; jx <= _cubesAlongX; jx++)
         {
-            for (jy = 0.0f; jy <= CubesAlongY; jy++)
+            for (jy = 0.0f; jy <= _cubesAlongY; jy++)
             {
-                for (jz = 0.0f; jz <= CubesAlongZ; jz++)
+                for (jz = 0.0f; jz <= _cubesAlongZ; jz++)
                 {
-                    _points[i] = new LatticePoint((jx / CubesAlongX) - .5f, (jy / CubesAlongY) - .5f, (jz / CubesAlongZ) - .5f, (int)jx, (int)jy, (int)jz, this);
+                    _points[i] = new LatticePoint((jx / _cubesAlongX) - .5f, (jy / _cubesAlongY) - .5f, (jz / _cubesAlongZ) - .5f, (int)jx, (int)jy, (int)jz, this);
 
                     i++;
                 }
@@ -575,11 +554,11 @@ public sealed class MarchingCubesEnvironment :
 
 
         int topo = 0;
-        for (ijx = 0; ijx < CubesAlongX - 1; ijx++)
+        for (ijx = 0; ijx < _cubesAlongX - 1; ijx++)
         {
-            for (ijy = 0; ijy < CubesAlongY - 1; ijy++)
+            for (ijy = 0; ijy < _cubesAlongY - 1; ijy++)
             {
-                for (ijz = 0; ijz < CubesAlongZ - 1; ijz++)
+                for (ijz = 0; ijz < _cubesAlongZ - 1; ijz++)
                 {
 
 
