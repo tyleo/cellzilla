@@ -79,7 +79,7 @@ public sealed class MarchingCubesEnvironment :
 
     /*Generated at startup for dimX,dimY,dimZ, 
       all the points, edges, cubes in the 3D lattice*/
-    private LatticePoint[] _points;
+    private LatticePoint[,,] _points;
     private LatticeEdge[] _edges;
     private LatticeCube[,,] _cubes;
 
@@ -142,7 +142,7 @@ public sealed class MarchingCubesEnvironment :
         }
     }
 
-    public class LatticePoint
+    private class LatticePoint
     {
         private readonly MarchingCubesEnvironment _environment;
         private int _lastFrameProcessed = 0;
@@ -175,8 +175,11 @@ public sealed class MarchingCubesEnvironment :
         /// <remarks>
         /// This only updates the intensity on a per-frame basis. If the intensity is updated twice
         /// in a single frame, this function simply returns the intensity.
+        /// 
+        /// We also shouldn't be *guessing* by using the LastFrameProcessed variable, is there a way
+        /// to do this without the variable?
         /// </remarks>
-        public float UpdateIntensityAndNormal()
+        public float UpdateIntensity()
         {
             if (LastFrameProcessed < _environment._currentFrameCounter)
             {
@@ -218,6 +221,9 @@ public sealed class MarchingCubesEnvironment :
         doFrame();
     }
 
+    /// <remarks>
+    /// Can this be done at the same time the intensity is calculated to save time?
+    /// </remarks>
     private Vector3 CalculateNormal(Vector3 point)
     {
         Vector3 normal = Vector3.zero;
@@ -234,17 +240,10 @@ public sealed class MarchingCubesEnvironment :
         return normal;
     }
 
-    /*Given xyz indices into lattice, return referring vertex */
-    private LatticePoint getPoint(int x, int y, int z)
-    {
-        if (x < 0 || y < 0 || z < 0 || x > _cubesAlongX || y > _cubesAlongY || z > _cubesAlongZ) { return null; }
-        return _points[z + (y * (_cubesAlongZ + 1)) + (x * (_cubesAlongZ + 1) * (_cubesAlongY + 1))];
-    }
-
     /*Return the interpolated position of point on an Axis*/
     private Vector3 mPos(LatticePoint a, LatticePoint b, int axisI)
     {
-        float mu = (_threshold - a.UpdateIntensityAndNormal()) / (b.UpdateIntensityAndNormal() - a.UpdateIntensityAndNormal());
+        float mu = (_threshold - a.UpdateIntensity()) / (b.UpdateIntensity() - a.UpdateIntensity());
         Vector3 tmp = Vector3.zero;
         tmp[0] = a.X;
         tmp[1] = a.Y;
@@ -264,14 +263,12 @@ public sealed class MarchingCubesEnvironment :
         LatticeEdge e = cube.GetEdge(edgei);
         if (e.LastFrameProcessed < _currentFrameCounter)
         {
-
             v = mPos(cube.GetPoint(p1i), cube.GetPoint(p2i), e.AxisOfEdge);
             e.EdgePoint = v;
             e.EdgePointIndex = _vertexIndex;
             _newNormals[_vertexIndex] = CalculateNormal(v);
             _newVertices[_vertexIndex++] = v;
             e.LastFrameProcessed = _currentFrameCounter;
-
         }
 
     }
@@ -290,14 +287,14 @@ public sealed class MarchingCubesEnvironment :
 
         int cubeIndex = 0;
 
-        if (cube.GetPoint(0).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 1; }
-        if (cube.GetPoint(1).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 2; }
-        if (cube.GetPoint(2).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 4; }
-        if (cube.GetPoint(3).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 8; }
-        if (cube.GetPoint(4).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 16; }
-        if (cube.GetPoint(5).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 32; }
-        if (cube.GetPoint(6).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 64; }
-        if (cube.GetPoint(7).UpdateIntensityAndNormal() > _threshold) { cubeIndex |= 128; }
+        if (cube.GetPoint(0).UpdateIntensity() > _threshold) { cubeIndex |= 1; }
+        if (cube.GetPoint(1).UpdateIntensity() > _threshold) { cubeIndex |= 2; }
+        if (cube.GetPoint(2).UpdateIntensity() > _threshold) { cubeIndex |= 4; }
+        if (cube.GetPoint(3).UpdateIntensity() > _threshold) { cubeIndex |= 8; }
+        if (cube.GetPoint(4).UpdateIntensity() > _threshold) { cubeIndex |= 16; }
+        if (cube.GetPoint(5).UpdateIntensity() > _threshold) { cubeIndex |= 32; }
+        if (cube.GetPoint(6).UpdateIntensity() > _threshold) { cubeIndex |= 64; }
+        if (cube.GetPoint(7).UpdateIntensity() > _threshold) { cubeIndex |= 128; }
 
         int edgeIndex = _edgeTable[cubeIndex];
         edgec += edgeIndex;
@@ -480,9 +477,7 @@ public sealed class MarchingCubesEnvironment :
     private void startObjs()
     {
         int i;
-        float jx, jy, jz;
         int ijx, ijy, ijz;
-        int pointCount = ((_cubesAlongX + 1) * (_cubesAlongY + 1) * (_cubesAlongZ + 1));
         int cubeCount = (_cubesAlongX * _cubesAlongY * _cubesAlongZ);
         int edgeCount = (cubeCount * 3) + ((2 * _cubesAlongX * _cubesAlongY) + (2 * _cubesAlongX * _cubesAlongZ) + (2 * _cubesAlongY * _cubesAlongZ)) + _cubesAlongX + _cubesAlongY + _cubesAlongZ; //Ideal Edge Count
         int edgeNow = edgeCount + ((_cubesAlongX * _cubesAlongY) + (_cubesAlongY * _cubesAlongZ) + (_cubesAlongZ * _cubesAlongX)) * 2; //Haven't combined the edges of the 0 index borders
@@ -506,7 +501,7 @@ public sealed class MarchingCubesEnvironment :
         //newUV=new Vector2[300000];
 
         _cubes = new LatticeCube[_cubesAlongX, _cubesAlongY, _cubesAlongZ];
-        _points = new LatticePoint[pointCount];
+        _points = new LatticePoint[_cubesAlongX + 1, _cubesAlongY + 1, _cubesAlongZ + 1];
         _edges = new LatticeEdge[edgeNow];
 
         for (i = 0; i < _tadam * 2; i++)
@@ -521,13 +516,13 @@ public sealed class MarchingCubesEnvironment :
 
 
         i = 0;
-        for (jx = 0.0f; jx <= _cubesAlongX; jx++)
+        for (int kx = 0; kx <= _cubesAlongX; kx++)
         {
-            for (jy = 0.0f; jy <= _cubesAlongY; jy++)
+            for (int ky = 0; ky <= _cubesAlongY; ky++)
             {
-                for (jz = 0.0f; jz <= _cubesAlongZ; jz++)
+                for (int kz = 0; kz <= _cubesAlongZ; kz++)
                 {
-                    _points[i] = new LatticePoint((jx / _cubesAlongX) - .5f, (jy / _cubesAlongY) - .5f, (jz / _cubesAlongZ) - .5f, (int)jx, (int)jy, (int)jz, this);
+                    _points[kx, ky, kz] = new LatticePoint(((float)kx / _cubesAlongX) - .5f, ((float)ky / _cubesAlongY) - .5f, ((float)kz / _cubesAlongZ) - .5f, kx, ky, kz, this);
 
                     i++;
                 }
@@ -560,23 +555,18 @@ public sealed class MarchingCubesEnvironment :
             {
                 for (ijz = 0; ijz < _cubesAlongZ - 1; ijz++)
                 {
-
-
                     c = _cubes[ijx, ijy, ijz];
                     i++;
                     c.LatticeXIndex = ijx; c.LatticeYIndex = ijy; c.LatticeZIndex = ijz;
 
-
-
-                    c.SetPoint(0, getPoint(ijx, ijy, ijz));
-                    c.SetPoint(1, getPoint(ijx + 1, ijy, ijz));
-                    c.SetPoint(2, getPoint(ijx + 1, ijy + 1, ijz));
-                    c.SetPoint(3, getPoint(ijx, ijy + 1, ijz));
-                    c.SetPoint(4, getPoint(ijx, ijy, ijz + 1));
-                    c.SetPoint(5, getPoint(ijx + 1, ijy, ijz + 1));
-                    c.SetPoint(6, getPoint(ijx + 1, ijy + 1, ijz + 1));
-                    c.SetPoint(7, getPoint(ijx, ijy + 1, ijz + 1));
-
+                    c.SetPoint(0, _points[ijx, ijy, ijz]);
+                    c.SetPoint(1, _points[ijx + 1, ijy, ijz]);
+                    c.SetPoint(2, _points[ijx + 1, ijy + 1, ijz]);
+                    c.SetPoint(3, _points[ijx, ijy + 1, ijz]);
+                    c.SetPoint(4, _points[ijx, ijy, ijz + 1]);
+                    c.SetPoint(5, _points[ijx + 1, ijy, ijz + 1]);
+                    c.SetPoint(6, _points[ijx + 1, ijy + 1, ijz + 1]);
+                    c.SetPoint(7, _points[ijx, ijy + 1, ijz + 1]);
 
                     c.SetEdge(5, _edges[ep++]);
                     c.GetEdge(5).AxisOfEdge = 1;
