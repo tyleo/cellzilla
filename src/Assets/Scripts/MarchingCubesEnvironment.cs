@@ -63,6 +63,11 @@ public sealed class MarchingCubesEnvironment :
     private int _cubesAlongY = 40;
     [SerializeField]
     private int _cubesAlongZ = 40;
+
+    /// <summary>
+    /// This value defines the edge of our object. Points below the threshold will be on one side of
+    /// the surface, points above the threshold will be on the other side.
+    /// </summary>
     [SerializeField]
     private float _threshold = 8.0f;
 
@@ -148,6 +153,9 @@ public sealed class MarchingCubesEnvironment :
         private int _lastFrameProcessed = 0;
         private Vector3 _position;
 
+        /// <summary>
+        /// The threshold value for this particular point.
+        /// </summary>
         public float Intensity { get; set; }
         public Vector3 Position { get { return _position; } }
         public float X { get { return _position.x; } set { _position.x = value; } }
@@ -161,12 +169,11 @@ public sealed class MarchingCubesEnvironment :
         /// <remarks>
         /// This only updates the intensity on a per-frame basis. If the intensity is updated twice
         /// in a single frame, this function simply returns the intensity.
-        /// 
-        /// We also shouldn't be *guessing* by using the LastFrameProcessed variable, is there a way
-        /// to do this without the variable?
         /// </remarks>
         public float UpdateIntensity()
         {
+            // TODO: We shouldn't be *guessing* by using the LastFrameProcessed variable, is there a
+            // way to do this without the variable?
             if (LastFrameProcessed < _environment._currentFrameCounter)
             {
                 Intensity = 0.0f;
@@ -207,13 +214,15 @@ public sealed class MarchingCubesEnvironment :
         doFrame();
     }
 
-    /// <remarks>
-    /// Can this be done at the same time the intensity is calculated to save time?
-    /// </remarks>
     private Vector3 CalculateNormal(Vector3 point)
     {
-        Vector3 normal = Vector3.zero;
+        // TODO: Can this be done at the same time the intensity is calculated to save time?
 
+        // The normal at a point is the average of all of the vectors pointing from a subsphere to
+        // the point, scaled by the intensity each subsphere provides. We can avoid dividing by the
+        // number of subspheres because we normalize at the end anyways.
+
+        Vector3 normal = Vector3.zero;
         foreach (var subsphere in _subspheres)
         {
             var subsphereToPoint = point - subsphere.transform.position;
@@ -226,7 +235,7 @@ public sealed class MarchingCubesEnvironment :
         return normal;
     }
 
-    private Vector3 InterpolatePoints(LatticePoint from, LatticePoint to, int axisIndex)
+    private Vector3 InterpolatePoint(LatticePoint from, LatticePoint to, int axisIndex)
     {
         var result = from.Position;
 
@@ -239,23 +248,18 @@ public sealed class MarchingCubesEnvironment :
         return result;
     }
 
-    /*If an edge of a cube has not been processed, find the interpolated point for 
-      that edge (assumes the boundary crosses the edge) and compute the normal
-      for that point, as well as assigning it an index into the vertex list*/
-    private void genEdge(LatticeCube cube, int edgei, int p1i, int p2i)
+    private void GenerateEdge(LatticeCube cube, int edgeIndex, int point0Index, int point1Index)
     {
-        Vector3 v;
-        LatticeEdge e = cube.GetEdge(edgei);
-        if (e.LastFrameProcessed < _currentFrameCounter)
+        var edge = cube.GetEdge(edgeIndex);
+        if (edge.LastFrameProcessed < _currentFrameCounter)
         {
-            v = InterpolatePoints(cube.GetPoint(p1i), cube.GetPoint(p2i), e.AxisOfEdge);
-            e.EdgePoint = v;
-            e.EdgePointIndex = _vertexIndex;
-            _newNormals[_vertexIndex] = CalculateNormal(v);
-            _newVertices[_vertexIndex++] = v;
-            e.LastFrameProcessed = _currentFrameCounter;
+            var interpolatedPoint = InterpolatePoint(cube.GetPoint(point0Index), cube.GetPoint(point1Index), edge.AxisOfEdge);
+            edge.EdgePoint = interpolatedPoint;
+            edge.EdgePointIndex = _vertexIndex;
+            _newNormals[_vertexIndex] = CalculateNormal(interpolatedPoint);
+            _newVertices[_vertexIndex++] = interpolatedPoint;
+            edge.LastFrameProcessed = _currentFrameCounter;
         }
-
     }
 
     /*Calculate a cube:
@@ -267,47 +271,74 @@ public sealed class MarchingCubesEnvironment :
       Returns true if the surface crosses the cube, false otherwise.*/
     private bool doCube(LatticeCube cube)
     {
-        int edgec, vertc;
-        edgec = 0; vertc = 0;
+        int vertexIndex = 0;
+        PointFlags activatedPointFlags = PointFlags.None;
 
-        int cubeIndex = 0;
-
-        if (cube.GetPoint(0).UpdateIntensity() > _threshold) { cubeIndex |= 1; }
-        if (cube.GetPoint(1).UpdateIntensity() > _threshold) { cubeIndex |= 2; }
-        if (cube.GetPoint(2).UpdateIntensity() > _threshold) { cubeIndex |= 4; }
-        if (cube.GetPoint(3).UpdateIntensity() > _threshold) { cubeIndex |= 8; }
-        if (cube.GetPoint(4).UpdateIntensity() > _threshold) { cubeIndex |= 16; }
-        if (cube.GetPoint(5).UpdateIntensity() > _threshold) { cubeIndex |= 32; }
-        if (cube.GetPoint(6).UpdateIntensity() > _threshold) { cubeIndex |= 64; }
-        if (cube.GetPoint(7).UpdateIntensity() > _threshold) { cubeIndex |= 128; }
-
-        int edgeIndex = _edgeTable[cubeIndex];
-        edgec += edgeIndex;
-        if (edgeIndex != 0)
+        if (cube.GetPoint(0).UpdateIntensity() > _threshold)
         {
-            if ((edgeIndex & 1) > 0) { genEdge(cube, 0, 0, 1); }
-            if ((edgeIndex & 2) > 0) { genEdge(cube, 1, 1, 2); }
-            if ((edgeIndex & 4) > 0) { genEdge(cube, 2, 2, 3); }
-            if ((edgeIndex & 0x8) > 0) { genEdge(cube, 3, 3, 0); }
-            if ((edgeIndex & 0x10) > 0) { genEdge(cube, 4, 4, 5); }
-            if ((edgeIndex & 0x20) > 0) { genEdge(cube, 5, 5, 6); }
-            if ((edgeIndex & 0x40) > 0) { genEdge(cube, 6, 6, 7); }
-            if ((edgeIndex & 0x80) > 0) { genEdge(cube, 7, 7, 4); }
-            if ((edgeIndex & 0x100) > 0) { genEdge(cube, 8, 0, 4); }
-            if ((edgeIndex & 0x200) > 0) { genEdge(cube, 9, 1, 5); }
-            if ((edgeIndex & 0x400) > 0) { genEdge(cube, 10, 2, 6); }
-            if ((edgeIndex & 0x800) > 0) { genEdge(cube, 11, 3, 7); }
+            activatedPointFlags |= PointFlags.PosXPosYPosZ;
+        }
+        if (cube.GetPoint(1).UpdateIntensity() > _threshold)
+        {
+            activatedPointFlags |= PointFlags.NegXPosYPosZ;
+        }
+        if (cube.GetPoint(2).UpdateIntensity() > _threshold)
+        {
+            activatedPointFlags |= PointFlags.NegXNegYPosZ;
+        }
+        if (cube.GetPoint(3).UpdateIntensity() > _threshold)
+        {
+            activatedPointFlags |= PointFlags.PosXNegYPosZ;
+        }
+        if (cube.GetPoint(4).UpdateIntensity() > _threshold)
+        {
+            activatedPointFlags |= PointFlags.PosXPosYNegZ;
+        }
+        if (cube.GetPoint(5).UpdateIntensity() > _threshold)
+        {
+            activatedPointFlags |= PointFlags.NegXPosYNegZ;
+        }
+        if (cube.GetPoint(6).UpdateIntensity() > _threshold)
+        {
+            activatedPointFlags |= PointFlags.NegXNegYNegZ;
+        }
+        if (cube.GetPoint(7).UpdateIntensity() > _threshold)
+        {
+            activatedPointFlags |= PointFlags.PosXNegYNegZ;
+        }
+
+        int activatedEdgeFlags = _edgeTable[(byte)activatedPointFlags];
+        if (activatedEdgeFlags != 0)
+        {
+            if ((activatedEdgeFlags & (1 << 00)) > 0) { GenerateEdge(cube, 0, 0, 1); }
+            if ((activatedEdgeFlags & (1 << 01)) > 0) { GenerateEdge(cube, 1, 1, 2); }
+            if ((activatedEdgeFlags & (1 << 02)) > 0) { GenerateEdge(cube, 2, 2, 3); }
+            if ((activatedEdgeFlags & (1 << 03)) > 0) { GenerateEdge(cube, 3, 3, 0); }
+            if ((activatedEdgeFlags & (1 << 04)) > 0) { GenerateEdge(cube, 4, 4, 5); }
+            if ((activatedEdgeFlags & (1 << 05)) > 0) { GenerateEdge(cube, 5, 5, 6); }
+            if ((activatedEdgeFlags & (1 << 06)) > 0) { GenerateEdge(cube, 6, 6, 7); }
+            if ((activatedEdgeFlags & (1 << 07)) > 0) { GenerateEdge(cube, 7, 7, 4); }
+            if ((activatedEdgeFlags & (1 << 08)) > 0) { GenerateEdge(cube, 8, 0, 4); }
+            if ((activatedEdgeFlags & (1 << 09)) > 0) { GenerateEdge(cube, 9, 1, 5); }
+            if ((activatedEdgeFlags & (1 << 10)) > 0) { GenerateEdge(cube, 10, 2, 6); }
+            if ((activatedEdgeFlags & (1 << 11)) > 0) { GenerateEdge(cube, 11, 3, 7); }
 
             int tpi = 0;
             int tmp;
-            while (_triangleTable[cubeIndex, tpi] != -1)
+            while (_triangleTable[(byte)activatedPointFlags, tpi] != -1)
             {
-                tmp = cube.GetEdge(_triangleTable[cubeIndex, tpi + 2]).EdgePointIndex;
-                _newTriangles[_triangleIndex++] = tmp; vertc += tmp;
-                tmp = cube.GetEdge(_triangleTable[cubeIndex, tpi + 1]).EdgePointIndex;
-                _newTriangles[_triangleIndex++] = tmp; vertc += tmp;
-                tmp = cube.GetEdge(_triangleTable[cubeIndex, tpi]).EdgePointIndex;
-                _newTriangles[_triangleIndex++] = tmp; vertc += tmp;
+                tmp = cube.GetEdge(_triangleTable[(byte)activatedPointFlags, tpi + 2]).EdgePointIndex;
+                _newTriangles[_triangleIndex++] = tmp;
+                vertexIndex += tmp;
+
+                tmp = cube.GetEdge(_triangleTable[(byte)activatedPointFlags, tpi + 1]).EdgePointIndex;
+                _newTriangles[_triangleIndex++] = tmp;
+                vertexIndex += tmp;
+
+                tmp = cube.GetEdge(_triangleTable[(byte)activatedPointFlags, tpi]).EdgePointIndex;
+                _newTriangles[_triangleIndex++] = tmp;
+                vertexIndex += tmp;
+
                 tpi += 3;
             }
 
@@ -396,7 +427,8 @@ public sealed class MarchingCubesEnvironment :
         /*Clear the Vertices that don't have any real information assigned to them */
         for (i = 0; i < _vertexIndex; i++)
         {
-            _scratchVertices[i] = _newVertices[i]; _scratchNormals[i] = _newNormals[i];
+            _scratchVertices[i] = _newVertices[i];
+            _scratchNormals[i] = _newNormals[i];
             _scratchUVs[i] = _tada2[_tadac2++];
             Vector3 fuvt = transform.TransformPoint(_scratchNormals[i]).normalized;
             _scratchUVs[i].x = (fuvt.x + 1f) * .5f; _scratchUVs[i].y = (fuvt.y + 1f) * .5f;
@@ -420,11 +452,6 @@ public sealed class MarchingCubesEnvironment :
         mesh.uv = _scratchUVs;
         mesh.triangles = _scratchTriangles;
         mesh.normals = _scratchNormals;
-
-        /*For Disco Ball Effect*/
-        //mesh.RecalculateNormals();	
-
-
     }
 
     /*What is needed to do every frame for the calculation and rendering of the Metaballs*/
@@ -905,37 +932,38 @@ public sealed class MarchingCubesEnvironment :
         {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
 
     private int[] _edgeTable = new int[] {
-        0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
-        0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
-        0x190, 0x99 , 0x393, 0x29a, 0x596, 0x49f, 0x795, 0x69c,
-        0x99c, 0x895, 0xb9f, 0xa96, 0xd9a, 0xc93, 0xf99, 0xe90,
-        0x230, 0x339, 0x33 , 0x13a, 0x636, 0x73f, 0x435, 0x53c,
-        0xa3c, 0xb35, 0x83f, 0x936, 0xe3a, 0xf33, 0xc39, 0xd30,
-        0x3a0, 0x2a9, 0x1a3, 0xaa , 0x7a6, 0x6af, 0x5a5, 0x4ac,
-        0xbac, 0xaa5, 0x9af, 0x8a6, 0xfaa, 0xea3, 0xda9, 0xca0,
-        0x460, 0x569, 0x663, 0x76a, 0x66 , 0x16f, 0x265, 0x36c,
-        0xc6c, 0xd65, 0xe6f, 0xf66, 0x86a, 0x963, 0xa69, 0xb60,
-        0x5f0, 0x4f9, 0x7f3, 0x6fa, 0x1f6, 0xff , 0x3f5, 0x2fc,
-        0xdfc, 0xcf5, 0xfff, 0xef6, 0x9fa, 0x8f3, 0xbf9, 0xaf0,
-        0x650, 0x759, 0x453, 0x55a, 0x256, 0x35f, 0x55 , 0x15c,
-        0xe5c, 0xf55, 0xc5f, 0xd56, 0xa5a, 0xb53, 0x859, 0x950,
-        0x7c0, 0x6c9, 0x5c3, 0x4ca, 0x3c6, 0x2cf, 0x1c5, 0xcc ,
-        0xfcc, 0xec5, 0xdcf, 0xcc6, 0xbca, 0xac3, 0x9c9, 0x8c0,
-        0x8c0, 0x9c9, 0xac3, 0xbca, 0xcc6, 0xdcf, 0xec5, 0xfcc,
-        0xcc , 0x1c5, 0x2cf, 0x3c6, 0x4ca, 0x5c3, 0x6c9, 0x7c0,
-        0x950, 0x859, 0xb53, 0xa5a, 0xd56, 0xc5f, 0xf55, 0xe5c,
-        0x15c, 0x55 , 0x35f, 0x256, 0x55a, 0x453, 0x759, 0x650,
-        0xaf0, 0xbf9, 0x8f3, 0x9fa, 0xef6, 0xfff, 0xcf5, 0xdfc,
-        0x2fc, 0x3f5, 0xff , 0x1f6, 0x6fa, 0x7f3, 0x4f9, 0x5f0,
-        0xb60, 0xa69, 0x963, 0x86a, 0xf66, 0xe6f, 0xd65, 0xc6c,
-        0x36c, 0x265, 0x16f, 0x66 , 0x76a, 0x663, 0x569, 0x460,
-        0xca0, 0xda9, 0xea3, 0xfaa, 0x8a6, 0x9af, 0xaa5, 0xbac,
-        0x4ac, 0x5a5, 0x6af, 0x7a6, 0xaa , 0x1a3, 0x2a9, 0x3a0,
-        0xd30, 0xc39, 0xf33, 0xe3a, 0x936, 0x83f, 0xb35, 0xa3c,
-        0x53c, 0x435, 0x73f, 0x636, 0x13a, 0x33 , 0x339, 0x230,
-        0xe90, 0xf99, 0xc93, 0xd9a, 0xa96, 0xb9f, 0x895, 0x99c,
-        0x69c, 0x795, 0x49f, 0x596, 0x29a, 0x393, 0x99 , 0x190,
-        0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
-        0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0   };
+        0x0000, 0x0109, 0x0203, 0x030a, 0x0406, 0x050f, 0x0605, 0x070c,
+        0x080c, 0x0905, 0x0a0f, 0x0b06, 0x0c0a, 0x0d03, 0x0e09, 0x0f00,
+        0x0190, 0x0099, 0x0393, 0x029a, 0x0596, 0x049f, 0x0795, 0x069c,
+        0x099c, 0x0895, 0x0b9f, 0x0a96, 0x0d9a, 0x0c93, 0x0f99, 0x0e90,
+        0x0230, 0x0339, 0x0033, 0x013a, 0x0636, 0x073f, 0x0435, 0x053c,
+        0x0a3c, 0x0b35, 0x083f, 0x0936, 0x0e3a, 0x0f33, 0x0c39, 0x0d30,
+        0x03a0, 0x02a9, 0x01a3, 0x00aa, 0x07a6, 0x06af, 0x05a5, 0x04ac,
+        0x0bac, 0x0aa5, 0x09af, 0x08a6, 0x0faa, 0x0ea3, 0x0da9, 0x0ca0,
+        0x0460, 0x0569, 0x0663, 0x076a, 0x0066, 0x016f, 0x0265, 0x036c,
+        0x0c6c, 0x0d65, 0x0e6f, 0x0f66, 0x086a, 0x0963, 0x0a69, 0x0b60,
+        0x05f0, 0x04f9, 0x07f3, 0x06fa, 0x01f6, 0x00ff, 0x03f5, 0x02fc,
+        0x0dfc, 0x0cf5, 0x0fff, 0x0ef6, 0x09fa, 0x08f3, 0x0bf9, 0x0af0,
+        0x0650, 0x0759, 0x0453, 0x055a, 0x0256, 0x035f, 0x0055, 0x015c,
+        0x0e5c, 0x0f55, 0x0c5f, 0x0d56, 0x0a5a, 0x0b53, 0x0859, 0x0950,
+        0x07c0, 0x06c9, 0x05c3, 0x04ca, 0x03c6, 0x02cf, 0x01c5, 0x00cc,
+        0x0fcc, 0x0ec5, 0x0dcf, 0x0cc6, 0x0bca, 0x0ac3, 0x09c9, 0x08c0,
+        0x08c0, 0x09c9, 0x0ac3, 0x0bca, 0x0cc6, 0x0dcf, 0x0ec5, 0x0fcc,
+        0x00cc, 0x01c5, 0x02cf, 0x03c6, 0x04ca, 0x05c3, 0x06c9, 0x07c0,
+        0x0950, 0x0859, 0x0b53, 0x0a5a, 0x0d56, 0x0c5f, 0x0f55, 0x0e5c,
+        0x015c, 0x0055, 0x035f, 0x0256, 0x055a, 0x0453, 0x0759, 0x0650,
+        0x0af0, 0x0bf9, 0x08f3, 0x09fa, 0x0ef6, 0x0fff, 0x0cf5, 0x0dfc,
+        0x02fc, 0x03f5, 0x00ff, 0x01f6, 0x06fa, 0x07f3, 0x04f9, 0x05f0,
+        0x0b60, 0x0a69, 0x0963, 0x086a, 0x0f66, 0x0e6f, 0x0d65, 0x0c6c,
+        0x036c, 0x0265, 0x016f, 0x0066, 0x076a, 0x0663, 0x0569, 0x0460,
+        0x0ca0, 0x0da9, 0x0ea3, 0x0faa, 0x08a6, 0x09af, 0x0aa5, 0x0bac,
+        0x04ac, 0x05a5, 0x06af, 0x07a6, 0x00aa, 0x01a3, 0x02a9, 0x03a0,
+        0x0d30, 0x0c39, 0x0f33, 0x0e3a, 0x0936, 0x083f, 0x0b35, 0x0a3c,
+        0x053c, 0x0435, 0x073f, 0x0636, 0x013a, 0x0033, 0x0339, 0x0230,
+        0x0e90, 0x0f99, 0x0c93, 0x0d9a, 0x0a96, 0x0b9f, 0x0895, 0x099c,
+        0x069c, 0x0795, 0x049f, 0x0596, 0x029a, 0x0393, 0x0099, 0x0190,
+        0x0f00, 0x0e09, 0x0d03, 0x0c0a, 0x0b06, 0x0a0f, 0x0905, 0x080c,
+        0x070c, 0x0605, 0x050f, 0x0406, 0x030a, 0x0203, 0x0109, 0x0000
+    };
 
 }
