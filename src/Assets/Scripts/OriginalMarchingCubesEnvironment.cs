@@ -52,7 +52,7 @@ using System;
 using System.Linq;
 using UnityEngine;
 
-public sealed class MarchingCubesEnvironment :
+public sealed class OriginalMarchingCubesEnvironment :
     MonoBehaviour
 {
     private Subsphere[] _subspheres;
@@ -144,7 +144,7 @@ public sealed class MarchingCubesEnvironment :
 
     private class LatticePoint
     {
-        private readonly MarchingCubesEnvironment _environment;
+        private readonly OriginalMarchingCubesEnvironment _environment;
         private int _lastFrameProcessed = 0;
         private Vector3 _position;
 
@@ -186,7 +186,7 @@ public sealed class MarchingCubesEnvironment :
             return Intensity;
         }
 
-        public LatticePoint(float x, float y, float z, int latticeXIndex, int latticeYIndex, int latticeZIndex, MarchingCubesEnvironment environment)
+        public LatticePoint(float x, float y, float z, int latticeXIndex, int latticeYIndex, int latticeZIndex, OriginalMarchingCubesEnvironment environment)
         {
             _position = new Vector3(x, y, z);
 
@@ -468,7 +468,7 @@ public sealed class MarchingCubesEnvironment :
     /*Unity Specific starting of engine*/
     void startEngine()
     {
-        ((MeshFilter)GetComponent("MeshFilter")).mesh = new Mesh();
+        GetComponent<MeshFilter>().mesh = new Mesh();
     }
 
 
