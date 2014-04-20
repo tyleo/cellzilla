@@ -89,11 +89,6 @@ public sealed class MarchingCubesEnvironment :
     private LatticeCube[,,] _cubes;
 
 
-    /*Scratch buffers for use within functions, to eliminate the usage of new almost entirely each frame*/
-    private Vector2[] _tada2;
-    private int _tadac2;
-    private int _tadam = 50000;
-
     private int _currentFrameCounter = 0;
 
     private class LatticeCube
@@ -219,10 +214,10 @@ public sealed class MarchingCubesEnvironment :
         // TODO: Can this be done at the same time the intensity is calculated to save time?
 
         // The normal at a point is the average of all of the vectors pointing from a subsphere to
-        // the point, scaled by the intensity each subsphere provides. We can avoid dividing by the
-        // number of subspheres because we normalize at the end anyways.
+        // the point, scaled by the intensity the subsphere provides. We can avoid dividing by the
+        // number of subspheres because we normalize at the end.
 
-        Vector3 normal = Vector3.zero;
+        var normal = Vector3.zero;
         foreach (var subsphere in _subspheres)
         {
             var subsphereToPoint = point - subsphere.transform.position;
@@ -262,16 +257,22 @@ public sealed class MarchingCubesEnvironment :
         }
     }
 
-    /*Calculate a cube:
-      First set a boolean pointer made up of all the vertices within the cube
-      then (if not all in or out of the surface) go through all the edges that 
-      are crossed by the surface and make sure that a vertex&normal is assigned 
-      at the point of crossing. Then add all the triangles that cover the surface
-      within the cube.
-      Returns true if the surface crosses the cube, false otherwise.*/
-    private bool doCube(LatticeCube cube)
+    /// <summary>
+    /// Generates the vertices for each triangle in a cube if part of the mesh is contained in the
+    /// cube.
+    /// </summary>
+    /// <param name="cube">
+    /// The cube to try to draw vertices for.
+    /// </param>
+    /// <returns>
+    /// True if part of the mesh is contained in the cube; false otherwise.
+    /// </returns>
+    private bool GenerateTrianglesForCube(LatticeCube cube)
     {
-        int vertexIndex = 0;
+        // TODO:
+        // Maybe the indices can be cleaned up a little?
+
+        // Get all of the vertices above the threshold for this cube.
         PointFlags activatedPointFlags =
             (cube.GetPoint(0).UpdateIntensity() > _threshold ? PointFlags.PosXPosYPosZ : PointFlags.None) |
             (cube.GetPoint(1).UpdateIntensity() > _threshold ? PointFlags.NegXPosYPosZ : PointFlags.None) |
@@ -282,71 +283,92 @@ public sealed class MarchingCubesEnvironment :
             (cube.GetPoint(6).UpdateIntensity() > _threshold ? PointFlags.NegXNegYNegZ : PointFlags.None) |
             (cube.GetPoint(7).UpdateIntensity() > _threshold ? PointFlags.PosXNegYNegZ : PointFlags.None);
 
-        int activatedEdgeFlags = _edgeTable[(byte)activatedPointFlags];
+        EdgeFlags activatedEdgeFlags = (EdgeFlags)_edgeTable[(byte)activatedPointFlags];
         if (activatedEdgeFlags != 0)
         {
-            if ((activatedEdgeFlags & (1 << 00)) > 0) { GenerateEdge(cube, 0, 0, 1); }
-            if ((activatedEdgeFlags & (1 << 01)) > 0) { GenerateEdge(cube, 1, 1, 2); }
-            if ((activatedEdgeFlags & (1 << 02)) > 0) { GenerateEdge(cube, 2, 2, 3); }
-            if ((activatedEdgeFlags & (1 << 03)) > 0) { GenerateEdge(cube, 3, 3, 0); }
-            if ((activatedEdgeFlags & (1 << 04)) > 0) { GenerateEdge(cube, 4, 4, 5); }
-            if ((activatedEdgeFlags & (1 << 05)) > 0) { GenerateEdge(cube, 5, 5, 6); }
-            if ((activatedEdgeFlags & (1 << 06)) > 0) { GenerateEdge(cube, 6, 6, 7); }
-            if ((activatedEdgeFlags & (1 << 07)) > 0) { GenerateEdge(cube, 7, 7, 4); }
-            if ((activatedEdgeFlags & (1 << 08)) > 0) { GenerateEdge(cube, 8, 0, 4); }
-            if ((activatedEdgeFlags & (1 << 09)) > 0) { GenerateEdge(cube, 9, 1, 5); }
-            if ((activatedEdgeFlags & (1 << 10)) > 0) { GenerateEdge(cube, 10, 2, 6); }
-            if ((activatedEdgeFlags & (1 << 11)) > 0) { GenerateEdge(cube, 11, 3, 7); }
-
-            int tpi = 0;
-            int tmp;
-            while (_triangleTable[(byte)activatedPointFlags, tpi] != -1)
+            // Create the interpolated vertices required for drawing this cube's triangles.
+            if ((activatedEdgeFlags & EdgeFlags.PosYPosZ) == EdgeFlags.PosYPosZ)
             {
-                tmp = cube.GetEdge(_triangleTable[(byte)activatedPointFlags, tpi + 2]).EdgePointIndex;
-                _newTriangles[_triangleIndex++] = tmp;
-                vertexIndex += tmp;
+                GenerateEdge(cube, 0, 0, 1);
+            }
+            if ((activatedEdgeFlags & EdgeFlags.NegXPosZ) == EdgeFlags.NegXPosZ)
+            {
+                GenerateEdge(cube, 1, 1, 2);
+            }
+            if ((activatedEdgeFlags & EdgeFlags.NegYPosZ) == EdgeFlags.NegYPosZ)
+            {
+                GenerateEdge(cube, 2, 2, 3);
+            }
+            if ((activatedEdgeFlags & EdgeFlags.PosXPosZ) == EdgeFlags.PosXPosZ)
+            {
+                GenerateEdge(cube, 3, 3, 0);
+            }
+            if ((activatedEdgeFlags & EdgeFlags.PosYNegZ) == EdgeFlags.PosYNegZ)
+            {
+                GenerateEdge(cube, 4, 4, 5);
+            }
+            if ((activatedEdgeFlags & EdgeFlags.NegXNegZ) == EdgeFlags.NegXNegZ)
+            {
+                GenerateEdge(cube, 5, 5, 6);
+            }
+            if ((activatedEdgeFlags & EdgeFlags.NegYNegZ) == EdgeFlags.NegYNegZ)
+            {
+                GenerateEdge(cube, 6, 6, 7);
+            }
+            if ((activatedEdgeFlags & EdgeFlags.PosXNegZ) == EdgeFlags.PosXNegZ)
+            {
+                GenerateEdge(cube, 7, 7, 4);
+            }
+            if ((activatedEdgeFlags & EdgeFlags.PosXPosY) == EdgeFlags.PosXPosY)
+            {
+                GenerateEdge(cube, 8, 0, 4);
+            }
+            if ((activatedEdgeFlags & EdgeFlags.NegXPosY) == EdgeFlags.NegXPosY)
+            {
+                GenerateEdge(cube, 9, 1, 5);
+            }
+            if ((activatedEdgeFlags & EdgeFlags.NegXNegY) == EdgeFlags.NegXNegY)
+            {
+                GenerateEdge(cube, 10, 2, 6);
+            }
+            if ((activatedEdgeFlags & EdgeFlags.PosXNegY) == EdgeFlags.PosXNegY)
+            {
+                GenerateEdge(cube, 11, 3, 7);
+            }
 
-                tmp = cube.GetEdge(_triangleTable[(byte)activatedPointFlags, tpi + 1]).EdgePointIndex;
-                _newTriangles[_triangleIndex++] = tmp;
-                vertexIndex += tmp;
-
-                tmp = cube.GetEdge(_triangleTable[(byte)activatedPointFlags, tpi]).EdgePointIndex;
-                _newTriangles[_triangleIndex++] = tmp;
-                vertexIndex += tmp;
-
-                tpi += 3;
+            for (int triangleIndex = 0; _triangleTable[(byte)activatedPointFlags, triangleIndex] != -1; triangleIndex += 3)
+            {
+                _newTriangles[_triangleIndex++] = cube.GetEdge(_triangleTable[(byte)activatedPointFlags, triangleIndex + 2]).EdgePointIndex;
+                _newTriangles[_triangleIndex++] = cube.GetEdge(_triangleTable[(byte)activatedPointFlags, triangleIndex + 1]).EdgePointIndex;
+                _newTriangles[_triangleIndex++] = cube.GetEdge(_triangleTable[(byte)activatedPointFlags, triangleIndex + 0]).EdgePointIndex;
             }
 
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
     /*Recurse all the neighboring cubes where thy contain part of the surface*/
     /*Counter to see how many cubes where processed*/
-    int _cubeCounter;
     private void recurseCube(LatticeCube cube)
     {
         LatticeCube nCube;
         int jx, jy, jz;
         jx = cube.LatticeXIndex; jy = cube.LatticeYIndex; jz = cube.LatticeZIndex;
-        _cubeCounter++;
         /* Test 6 axis cases. This seems to work well, no need to test all 26 cases */
         nCube = _cubes[jx + 1, jy, jz];
-        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (GenerateTrianglesForCube(nCube)) { recurseCube(nCube); } }
         nCube = _cubes[jx - 1, jy, jz];
-        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (GenerateTrianglesForCube(nCube)) { recurseCube(nCube); } }
         nCube = _cubes[jx, jy + 1, jz];
-        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (GenerateTrianglesForCube(nCube)) { recurseCube(nCube); } }
         nCube = _cubes[jx, jy - 1, jz];
-        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (GenerateTrianglesForCube(nCube)) { recurseCube(nCube); } }
         nCube = _cubes[jx, jy, jz + 1];
-        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (GenerateTrianglesForCube(nCube)) { recurseCube(nCube); } }
         nCube = _cubes[jx, jy, jz - 1];
-        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (doCube(nCube)) { recurseCube(nCube); } }
+        if (nCube != null && nCube.LastFrameProcessed < _currentFrameCounter) { nCube.LastFrameProcessed = _currentFrameCounter; if (GenerateTrianglesForCube(nCube)) { recurseCube(nCube); } }
     }
 
     /*Go through all the Blobs, and travel from the center outwards in a negative Z direction
@@ -364,13 +386,12 @@ public sealed class MarchingCubesEnvironment :
             jy = (int)((pb.transform.position.y + .5f) * _cubesAlongY);
             jz = (int)((pb.transform.position.z + .5f) * _cubesAlongZ);
 
-
             while (jz >= 0)
             {
                 LatticeCube cube = _cubes[jx, jy, jz];
                 if (cube != null && cube.LastFrameProcessed < _currentFrameCounter)
                 {
-                    if (doCube(cube))
+                    if (GenerateTrianglesForCube(cube))
                     {
                         recurseCube(cube);
                         jz = -1;
@@ -384,8 +405,6 @@ public sealed class MarchingCubesEnvironment :
                 jz -= 1;
             }
         }
-
-
     }
 
     /*Unity and Sample Specific, scratch caches to not reallocate vertices/tris/etc...*/
@@ -404,7 +423,7 @@ public sealed class MarchingCubesEnvironment :
         {
             _scratchVertices[i] = _newVertices[i];
             _scratchNormals[i] = _newNormals[i];
-            _scratchUVs[i] = _tada2[_tadac2++];
+            _scratchUVs[i] = Vector2.zero;
             Vector3 fuvt = transform.TransformPoint(_scratchNormals[i]).normalized;
             _scratchUVs[i].x = (fuvt.x + 1f) * .5f; _scratchUVs[i].y = (fuvt.y + 1f) * .5f;
         }
@@ -432,8 +451,6 @@ public sealed class MarchingCubesEnvironment :
     /*What is needed to do every frame for the calculation and rendering of the Metaballs*/
     void doFrame()
     {
-        _tadac2 = 0;
-        _cubeCounter = 0;
         _currentFrameCounter++;
         _triangleIndex = 0;
         _vertexIndex = 0;
@@ -471,7 +488,6 @@ public sealed class MarchingCubesEnvironment :
 
         //Should be a pretty safe amount
         int tmpv = (int)(_cubesAlongX * _cubesAlongY * _cubesAlongZ / 7);
-        _tadam = tmpv * 4;
         _scratchVertices = new Vector3[tmpv];
         _scratchNormals = new Vector3[tmpv];
         _scratchUVs = new Vector2[tmpv];
@@ -483,18 +499,12 @@ public sealed class MarchingCubesEnvironment :
         _newVertices = new Vector3[300000];
         _newTriangles = new int[300000];
         _newNormals = new Vector3[300000];
-        _tada2 = new Vector2[_tadam * 2];
 
         //newUV=new Vector2[300000];
 
         _cubes = new LatticeCube[_cubesAlongX, _cubesAlongY, _cubesAlongZ];
         _points = new LatticePoint[_cubesAlongX + 1, _cubesAlongY + 1, _cubesAlongZ + 1];
         _edges = new LatticeEdge[edgeNow];
-
-        for (i = 0; i < _tadam * 2; i++)
-        {
-            _tada2[i] = new Vector2(0, 0);
-        }
 
         for (i = 0; i < edgeNow; i++)
         {
@@ -906,7 +916,7 @@ public sealed class MarchingCubesEnvironment :
             {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}
         };
 
-    private int[] _edgeTable = new int[] {
+    private ushort[] _edgeTable = new ushort[] {
         0x0000, 0x0109, 0x0203, 0x030a, 0x0406, 0x050f, 0x0605, 0x070c,
         0x080c, 0x0905, 0x0a0f, 0x0b06, 0x0c0a, 0x0d03, 0x0e09, 0x0f00,
         0x0190, 0x0099, 0x0393, 0x029a, 0x0596, 0x049f, 0x0795, 0x069c,

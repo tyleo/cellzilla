@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\ConstantRotation.cs" />
+     <Compile Include="Assets\Scripts\EdgeFlags.cs" />
      <Compile Include="Assets\Scripts\MarchingCubesEnvironment.cs" />
      <Compile Include="Assets\Scripts\MoveApartFromInput.cs" />
      <Compile Include="Assets\Scripts\PointFlags.cs" />
