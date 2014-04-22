@@ -64,7 +64,12 @@ namespace Tyleo.MarchingCubes
             const int j = 0;
             const int k = 0;
 
-            points[i, j, k] = null;
+            points[i, j, k] = 
+                new MarchingPoint(
+                    GetXLocation(points.GetLength(X_INDEX), i),
+                    GetYLocation(points.GetLength(Y_INDEX), j),
+                    GetZLocation(points.GetLength(Z_INDEX), k)
+                );
         }
 
         private static void CreateInitialXYEdge(MarchingPoint[, ,] points, MarchingEdge[, ,] zEdges)
@@ -74,7 +79,12 @@ namespace Tyleo.MarchingCubes
 
             for (int k = 1; k < points.GetLength(Z_INDEX); ++k)
             {
-                points[i, j, k] = null;
+                points[i, j, k] =
+                    new MarchingPoint(
+                        GetXLocation(points.GetLength(X_INDEX), i),
+                        GetYLocation(points.GetLength(Y_INDEX), j),
+                        GetZLocation(points.GetLength(Z_INDEX), k)
+                    );
 
                 zEdges[i + 0, j + 0, k - 1] = null;
             }
@@ -87,7 +97,12 @@ namespace Tyleo.MarchingCubes
 
             for (int j = 1; j < points.GetLength(Y_INDEX); ++j)
             {
-                points[i, j, k] = null;
+                points[i, j, k] =
+                    new MarchingPoint(
+                        GetXLocation(points.GetLength(X_INDEX), i),
+                        GetYLocation(points.GetLength(Y_INDEX), j),
+                        GetZLocation(points.GetLength(Z_INDEX), k)
+                    );
 
                 yEdges[i + 0, j - 1, k + 0] = null;
             }
@@ -100,7 +115,12 @@ namespace Tyleo.MarchingCubes
 
             for (int i = 1; i < points.GetLength(X_INDEX); ++i)
             {
-                points[i, j, k] = null;
+                points[i, j, k] =
+                    new MarchingPoint(
+                        GetXLocation(points.GetLength(X_INDEX), i),
+                        GetYLocation(points.GetLength(Y_INDEX), j),
+                        GetZLocation(points.GetLength(Z_INDEX), k)
+                    );
 
                 xEdges[i - 1, j + 0, k + 0] = null;
             }
@@ -114,7 +134,12 @@ namespace Tyleo.MarchingCubes
             {
                 for (int k = 1; k < points.GetLength(Z_INDEX); ++k)
                 {
-                    points[i, j, k] = null;
+                    points[i, j, k] =
+                        new MarchingPoint(
+                            GetXLocation(points.GetLength(X_INDEX), i),
+                            GetYLocation(points.GetLength(Y_INDEX), j),
+                            GetZLocation(points.GetLength(Z_INDEX), k)
+                        );
 
                     yEdges[i + 0, j - 1, k + 0] = null;
                     zEdges[i + 0, j + 0, k - 1] = null;
@@ -130,7 +155,12 @@ namespace Tyleo.MarchingCubes
             {
                 for (int k = 1; k < points.GetLength(Z_INDEX); ++k)
                 {
-                    points[i, j, k] = null;
+                    points[i, j, k] =
+                        new MarchingPoint(
+                            GetXLocation(points.GetLength(X_INDEX), i),
+                            GetYLocation(points.GetLength(Y_INDEX), j),
+                            GetZLocation(points.GetLength(Z_INDEX), k)
+                        );
 
                     xEdges[i - 1, j + 0, k + 0] = null;
                     zEdges[i + 0, j + 0, k - 1] = null;
@@ -146,7 +176,12 @@ namespace Tyleo.MarchingCubes
             {
                 for (int j = 1; j < points.GetLength(Y_INDEX); ++j)
                 {
-                    points[i, j, k] = null;
+                    points[i, j, k] =
+                        new MarchingPoint(
+                            GetXLocation(points.GetLength(X_INDEX), i),
+                            GetYLocation(points.GetLength(Y_INDEX), j),
+                            GetZLocation(points.GetLength(Z_INDEX), k)
+                        );
 
                     xEdges[i - 1, j + 0, k + 0] = null;
                     yEdges[i + 0, j - 1, k + 0] = null;
@@ -162,7 +197,12 @@ namespace Tyleo.MarchingCubes
                 {
                     for (int k = 1; k < points.GetLength(Z_INDEX); ++k)
                     {
-                        points[i, j, k] = null;
+                        points[i, j, k] =
+                            new MarchingPoint(
+                                GetXLocation(points.GetLength(X_INDEX), i),
+                                GetYLocation(points.GetLength(Y_INDEX), j),
+                                GetZLocation(points.GetLength(Z_INDEX), k)
+                            );
 
                         xEdges[i - 1, j + 0, k + 0] = null;
                         yEdges[i + 0, j - 1, k + 0] = null;
@@ -172,6 +212,21 @@ namespace Tyleo.MarchingCubes
                     }
                 }
             }
+        }
+
+        private static float GetXLocation(int pointsAlongX, int xIndex)
+        {
+            return (float)xIndex - (float)(pointsAlongX - 1) / 2.0f;
+        }
+
+        private static float GetYLocation(int pointsAlongY, int yIndex)
+        {
+            return (float)yIndex - (float)(pointsAlongY - 1) / 2.0f;
+        }
+
+        private static float GetZLocation(int pointsAlongZ, int zIndex)
+        {
+            return (float)zIndex - (float)(pointsAlongZ - 1) / 2.0f;
         }
     }
 }
