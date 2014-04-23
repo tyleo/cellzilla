@@ -53,6 +53,7 @@
      <Compile Include="Assets\Scripts\PointFlags.cs" />
      <Compile Include="Assets\Scripts\Subsphere.cs" />
      <Compile Include="Assets\Scripts\SubsphereSeeker.cs" />
+     <Compile Include="Assets\Scripts\Test.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingCube.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingCubesData.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingCubesEnvironment.cs" />

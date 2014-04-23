@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace Tyleo.MarchingCubes
 {
@@ -9,6 +10,20 @@ namespace Tyleo.MarchingCubes
 
         public MarchingPoint MarchingPoint0 { get { return _marchingPoint0; } }
         public MarchingPoint MarchingPoint1 { get { return _marchingPoint1; } }
+
+        public uint LastFrameTouched { get; set; }
+
+        public override string ToString()
+        {
+            return
+                new StringBuilder()
+                .Append('{')
+                .Append(_marchingPoint0)
+                .Append(", ")
+                .Append(_marchingPoint1)
+                .Append('}')
+                .ToString();
+        }
 
         public MarchingEdge(MarchingPoint marchingPoint0, MarchingPoint marchingPoint1)
         {

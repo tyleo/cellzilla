@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Tyleo.MarchingCubes
@@ -7,6 +8,25 @@ namespace Tyleo.MarchingCubes
         IEquatable<MarchingPoint>
     {
         private readonly Vector3 _localSpaceCoordinates;
+        private uint _lastFrameTouched = 0;
+        private float _intensity = 0.0f;
+
+        public Vector3 LocalSpaceCoordinates { get { return _localSpaceCoordinates; } }
+        public uint LastFrameTouched { get { return _lastFrameTouched; } }
+        public float Intensity { get { return _intensity; } }
+
+        public void UpdateIntensity(uint currentFrame, Transform localToWorldTransform, List<MarchingEntity> marchingEntities)
+        {
+            _lastFrameTouched = currentFrame;
+
+            var worldSpaceCoordinates = localToWorldTransform.TransformPoint(_localSpaceCoordinates);
+
+            _intensity = 0.0f;
+            foreach (var marchingEntity in marchingEntities)
+            {
+                _intensity += marchingEntity.GetIntensity(worldSpaceCoordinates);
+            }
+        }
 
         public override bool Equals(object obj)
         {
