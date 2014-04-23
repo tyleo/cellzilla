@@ -8,23 +8,29 @@ namespace Tyleo.MarchingCubes
         IEquatable<MarchingPoint>
     {
         private readonly Vector3 _localSpaceCoordinates;
+        private Vector3 _worldSpaceCoordinates;
         private uint _lastFrameTouched = 0;
         private float _intensity = 0.0f;
 
         public Vector3 LocalSpaceCoordinates { get { return _localSpaceCoordinates; } }
+        public Vector3 WorldSpaceCoordinates { get { return _worldSpaceCoordinates; } }
         public uint LastFrameTouched { get { return _lastFrameTouched; } }
         public float Intensity { get { return _intensity; } }
 
-        public void UpdateIntensity(uint currentFrame, Transform localToWorldTransform, List<MarchingEntity> marchingEntities)
+        public void Process(uint currentFrameIndex, Transform environmentTransform, IEnumerable<MarchingEntity> marchingEntities)
         {
-            _lastFrameTouched = currentFrame;
+            _lastFrameTouched = currentFrameIndex;
+            _worldSpaceCoordinates = environmentTransform.TransformPoint(_localSpaceCoordinates);
 
-            var worldSpaceCoordinates = localToWorldTransform.TransformPoint(_localSpaceCoordinates);
+            UpdateIntensity(marchingEntities);
+        }
 
+        private void UpdateIntensity(IEnumerable<MarchingEntity> marchingEntities)
+        {
             _intensity = 0.0f;
             foreach (var marchingEntity in marchingEntities)
             {
-                _intensity += marchingEntity.GetIntensity(worldSpaceCoordinates);
+                _intensity += marchingEntity.GetIntensity(_worldSpaceCoordinates);
             }
         }
 

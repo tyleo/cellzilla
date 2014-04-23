@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Tyleo.MarchingCubes
 {
-    public sealed class MeshBuilder
+    public sealed class MeshDataProvider
     {
         private readonly Queue<Vector3> _vertices;
         private readonly Queue<Vector2> _uv;
@@ -52,7 +52,7 @@ namespace Tyleo.MarchingCubes
             _normals.Enqueue(normal);
         }
 
-        public MeshBuilder(int predictedNumberOfVertices)
+        public MeshDataProvider(int predictedNumberOfVertices)
         {
             _vertices = new Queue<Vector3>(predictedNumberOfVertices);
             _uv = new Queue<Vector2>(predictedNumberOfVertices);

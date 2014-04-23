@@ -54,42 +54,61 @@ namespace Tyleo.MarchingCubes
 
         public uint LastFrameTouched { get { return _lastFrameTouched; } }
 
-        public void ProcessPoints(uint frameCount, List<MarchingEntity> marchingEntities, Transform environmentTransform)
+        public bool Process(uint currentFrameIndex, Transform environmentTransform, IEnumerable<MarchingEntity> marchingEntities)
         {
-            _lastFrameTouched = frameCount;
+            _lastFrameTouched = currentFrameIndex;
 
+            ProcessPoints(environmentTransform, marchingEntities);
+
+            ProcessEdges(marchingEntities);
+
+            return true;
+        }
+
+        private void ProcessPoints(Transform environmentTransform, IEnumerable<MarchingEntity> marchingEntities)
+        {
             if (NxNyNzPoint.LastFrameTouched != LastFrameTouched)
             {
-                NxNyNzPoint.UpdateIntensity(LastFrameTouched, environmentTransform, marchingEntities);
+                NxNyNzPoint.Process(LastFrameTouched, environmentTransform, marchingEntities);
             }
             if (NxNyPzPoint.LastFrameTouched != LastFrameTouched)
             {
-                NxNyPzPoint.UpdateIntensity(LastFrameTouched, environmentTransform, marchingEntities);
+                NxNyPzPoint.Process(LastFrameTouched, environmentTransform, marchingEntities);
             }
             if (NxPyNzPoint.LastFrameTouched != LastFrameTouched)
             {
-                NxPyNzPoint.UpdateIntensity(LastFrameTouched, environmentTransform, marchingEntities);
+                NxPyNzPoint.Process(LastFrameTouched, environmentTransform, marchingEntities);
             }
             if (NxPyPzPoint.LastFrameTouched != LastFrameTouched)
             {
-                NxPyPzPoint.UpdateIntensity(LastFrameTouched, environmentTransform, marchingEntities);
+                NxPyPzPoint.Process(LastFrameTouched, environmentTransform, marchingEntities);
             }
             if (PxNyNzPoint.LastFrameTouched != LastFrameTouched)
             {
-                PxNyNzPoint.UpdateIntensity(LastFrameTouched, environmentTransform, marchingEntities);
+                PxNyNzPoint.Process(LastFrameTouched, environmentTransform, marchingEntities);
             }
             if (PxNyPzPoint.LastFrameTouched != LastFrameTouched)
             {
-                PxNyPzPoint.UpdateIntensity(LastFrameTouched, environmentTransform, marchingEntities);
+                PxNyPzPoint.Process(LastFrameTouched, environmentTransform, marchingEntities);
             }
             if (PxPyNzPoint.LastFrameTouched != LastFrameTouched)
             {
-                PxPyNzPoint.UpdateIntensity(LastFrameTouched, environmentTransform, marchingEntities);
+                PxPyNzPoint.Process(LastFrameTouched, environmentTransform, marchingEntities);
             }
             if (PxPyPzPoint.LastFrameTouched != LastFrameTouched)
             {
-                PxPyPzPoint.UpdateIntensity(LastFrameTouched, environmentTransform, marchingEntities);
+                PxPyPzPoint.Process(LastFrameTouched, environmentTransform, marchingEntities);
             }
+        }
+
+        private void ProcessEdges(IEnumerable<MarchingEntity> marchingEntities)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void UpdateMesh(MeshDataProvider meshData)
+        {
+            throw new System.NotImplementedException();
         }
 
         public MarchingCube(
