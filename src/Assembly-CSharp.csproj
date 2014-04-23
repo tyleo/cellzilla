@@ -56,14 +56,14 @@
     <Compile Include="Assets\Scripts\SubsphereSeeker.cs" />
     <Compile Include="Assets\Scripts\Test.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\AxisIndexProvider.cs" />
-    <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\CubeLatticeGenerator.cs" />
+    <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingMeshGenerator.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\Int32Extensions.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingCube.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingCubesData.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingCubesEnvironment.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingEdge.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingEntity.cs" />
-    <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingMeshGenerator.cs" />
+    <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\CubeLatticeGenerator.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingMeshGeneratorParameterPack.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingMetaball.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingPoint.cs" />
