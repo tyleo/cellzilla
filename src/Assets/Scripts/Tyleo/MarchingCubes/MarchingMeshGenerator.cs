@@ -9,7 +9,6 @@ namespace Tyleo.MarchingCubes
             var result = new MeshDataProvider(predictedNumberOfVertices);
 
             UpdateCubes(parameters, result);
-
             return result;
         }
 
@@ -19,18 +18,10 @@ namespace Tyleo.MarchingCubes
             {
                 // First we convert the center of a marching entity into an index in our cube
                 // lattice.
-                var environmentToEntityVector = marchingEntity.transform.position - parameters.CubeEnvironmentTransform.position;
-                var rotatedEnvironmentToEntityVector = parameters.CubeEnvironmentTransform.rotation * environmentToEntityVector;
-
-                var scaledRotatedEnvironmentToEntityVector =
-                    new Vector3(
-                        rotatedEnvironmentToEntityVector.x / parameters.CubeEnvironmentTransform.lossyScale.x,
-                        rotatedEnvironmentToEntityVector.y / parameters.CubeEnvironmentTransform.lossyScale.y,
-                        rotatedEnvironmentToEntityVector.z / parameters.CubeEnvironmentTransform.lossyScale.z
-                    );
+                var shiftedUnitIndexVector = parameters.CubeEnvironmentTransform.InverseTransformPoint(marchingEntity.transform.position);
 
                 var unitIndexVector =
-                    scaledRotatedEnvironmentToEntityVector +
+                    shiftedUnitIndexVector +
                     new Vector3(
                         +0.5f,
                         +0.5f,
@@ -91,6 +82,7 @@ namespace Tyleo.MarchingCubes
             // Here we just check the cubes above, below, left, right, front, back and see if they
             // also need a mesh. We make the assumption that the cube at i, j, k is already part of
             // a mesh.
+            
             if (k > 0 && ProcessCube(parameters, meshData, i + 0, j + 0, k - 1))
             {
                 UpdateCubesRecursively(parameters, meshData, i + 0, j + 0, k - 1);

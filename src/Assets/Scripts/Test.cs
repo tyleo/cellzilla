@@ -4,24 +4,38 @@ public sealed class Test :
     MonoBehaviour
 {
     [SerializeField]
+    private int _cubesAlongX = 20;
+    [SerializeField]
+    private int _cubesAlongY = 20;
+    [SerializeField]
+    private int _cubesAlongZ = 20;
+    [SerializeField]
     private GameObject _objectThatCanEnterMe;
 
     private void Update()
     {
-        Debug.Log(ObjectIsInMe(transform, _objectThatCanEnterMe.transform));
+        Debug.Log(ObjectPositionToIndexVector(transform, _objectThatCanEnterMe.transform, _cubesAlongX, _cubesAlongY, _cubesAlongZ));
     }
 
-    private static bool ObjectIsInMe(Transform myTransform, Transform otherTransform)
+    private static Vector3 ObjectPositionToIndexVector(Transform myTransform, Transform otherTransform, int cubesAlongX, int cubesAlongY, int cubesAlongZ)
     {
-        var meToOtherVector = otherTransform.position - myTransform.position;
-        var rotatedMeToOtherVector = myTransform.rotation * meToOtherVector;
+        var shiftedUnitIndexVector = myTransform.InverseTransformPoint(otherTransform.position);
 
-        return
-            rotatedMeToOtherVector.x > -0.5f * myTransform.lossyScale.x &&
-            rotatedMeToOtherVector.x < +0.5f * myTransform.lossyScale.x &&
-            rotatedMeToOtherVector.y > -0.5f * myTransform.lossyScale.y &&
-            rotatedMeToOtherVector.y < +0.5f * myTransform.lossyScale.y &&
-            rotatedMeToOtherVector.z > -0.5f * myTransform.lossyScale.z &&
-            rotatedMeToOtherVector.z < +0.5f * myTransform.lossyScale.z;
+        var unitIndexVector =
+            shiftedUnitIndexVector +
+            new Vector3(
+                +0.5f,
+                +0.5f,
+                +0.5f
+            );
+
+        var indexVector =
+            new Vector3(
+                unitIndexVector.x * cubesAlongX,
+                unitIndexVector.y * cubesAlongY,
+                unitIndexVector.z * cubesAlongZ
+            );
+
+        return indexVector;
     }
 }

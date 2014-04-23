@@ -62,7 +62,7 @@ namespace Tyleo.MarchingCubes
 
             ProcessEdges(marchingEntities);
 
-            return true;
+            throw new System.NotImplementedException();
         }
 
         private void ProcessPoints(Transform environmentTransform, IEnumerable<MarchingEntity> marchingEntities)
