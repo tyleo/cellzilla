@@ -50,65 +50,65 @@ namespace Tyleo.MarchingCubes
             MarchingEdge zXnYnZEdge
         )
         {
-            Debug.Assert(
-                pXpYzZEdge.MarchingPoint0.Equals(pXpYnZPoint) &&
-                pXpYzZEdge.MarchingPoint1.Equals(pXpYpZPoint)
-            );
+            //Debug.Assert(
+            //    pXpYzZEdge.MarchingPoint0.Equals(pXpYnZPoint) &&
+            //    pXpYzZEdge.MarchingPoint1.Equals(pXpYpZPoint)
+            //);
 
-            Debug.Assert(
-                nXpYzZEdge.MarchingPoint0.Equals(nXpYnZPoint) &&
-                nXpYzZEdge.MarchingPoint1.Equals(nXpYpZPoint)
-            );
+            //Debug.Assert(
+            //    nXpYzZEdge.MarchingPoint0.Equals(nXpYnZPoint) &&
+            //    nXpYzZEdge.MarchingPoint1.Equals(nXpYpZPoint)
+            //);
 
-            Debug.Assert(
-                pXnYzZEdge.MarchingPoint0.Equals(pXnYnZPoint) &&
-                pXnYzZEdge.MarchingPoint1.Equals(pXnYpZPoint)
-            );
+            //Debug.Assert(
+            //    pXnYzZEdge.MarchingPoint0.Equals(pXnYnZPoint) &&
+            //    pXnYzZEdge.MarchingPoint1.Equals(pXnYpZPoint)
+            //);
 
-            Debug.Assert(
-                nXnYzZEdge.MarchingPoint0.Equals(nXnYnZPoint) &&
-                nXnYzZEdge.MarchingPoint1.Equals(nXnYpZPoint)
-            );
+            //Debug.Assert(
+            //    nXnYzZEdge.MarchingPoint0.Equals(nXnYnZPoint) &&
+            //    nXnYzZEdge.MarchingPoint1.Equals(nXnYpZPoint)
+            //);
 
-            Debug.Assert(
-                pXzYpZEdge.MarchingPoint0.Equals(pXnYpZPoint) &&
-                pXzYpZEdge.MarchingPoint1.Equals(pXpYpZPoint)
-            );
+            //Debug.Assert(
+            //    pXzYpZEdge.MarchingPoint0.Equals(pXnYpZPoint) &&
+            //    pXzYpZEdge.MarchingPoint1.Equals(pXpYpZPoint)
+            //);
 
-            Debug.Assert(
-                nXzYpZEdge.MarchingPoint0.Equals(nXnYpZPoint) &&
-                nXzYpZEdge.MarchingPoint1.Equals(nXpYpZPoint)
-            );
+            //Debug.Assert(
+            //    nXzYpZEdge.MarchingPoint0.Equals(nXnYpZPoint) &&
+            //    nXzYpZEdge.MarchingPoint1.Equals(nXpYpZPoint)
+            //);
 
-            Debug.Assert(
-                pXzYnZEdge.MarchingPoint0.Equals(pXnYnZPoint) &&
-                pXzYnZEdge.MarchingPoint1.Equals(pXpYnZPoint)
-            );
+            //Debug.Assert(
+            //    pXzYnZEdge.MarchingPoint0.Equals(pXnYnZPoint) &&
+            //    pXzYnZEdge.MarchingPoint1.Equals(pXpYnZPoint)
+            //);
 
-            Debug.Assert(
-                nXzYnZEdge.MarchingPoint0.Equals(nXnYnZPoint) &&
-                nXzYnZEdge.MarchingPoint1.Equals(nXpYnZPoint)
-            );
+            //Debug.Assert(
+            //    nXzYnZEdge.MarchingPoint0.Equals(nXnYnZPoint) &&
+            //    nXzYnZEdge.MarchingPoint1.Equals(nXpYnZPoint)
+            //);
 
-            Debug.Assert(
-                zXpYpZEdge.MarchingPoint0.Equals(nXpYpZPoint) &&
-                zXpYpZEdge.MarchingPoint1.Equals(pXpYpZPoint)
-            );
+            //Debug.Assert(
+            //    zXpYpZEdge.MarchingPoint0.Equals(nXpYpZPoint) &&
+            //    zXpYpZEdge.MarchingPoint1.Equals(pXpYpZPoint)
+            //);
 
-            Debug.Assert(
-                zXnYpZEdge.MarchingPoint0.Equals(nXnYpZPoint) &&
-                zXnYpZEdge.MarchingPoint1.Equals(pXnYpZPoint)
-            );
+            //Debug.Assert(
+            //    zXnYpZEdge.MarchingPoint0.Equals(nXnYpZPoint) &&
+            //    zXnYpZEdge.MarchingPoint1.Equals(pXnYpZPoint)
+            //);
 
-            Debug.Assert(
-                zXpYnZEdge.MarchingPoint0.Equals(nXpYnZPoint) &&
-                zXpYnZEdge.MarchingPoint1.Equals(pXpYnZPoint)
-            );
+            //Debug.Assert(
+            //    zXpYnZEdge.MarchingPoint0.Equals(nXpYnZPoint) &&
+            //    zXpYnZEdge.MarchingPoint1.Equals(pXpYnZPoint)
+            //);
 
-            Debug.Assert(
-                zXnYnZEdge.MarchingPoint0.Equals(nXnYnZPoint) &&
-                zXnYnZEdge.MarchingPoint1.Equals(pXnYnZPoint)
-            );
+            //Debug.Assert(
+            //    zXnYnZEdge.MarchingPoint0.Equals(nXnYnZPoint) &&
+            //    zXnYnZEdge.MarchingPoint1.Equals(pXnYnZPoint)
+            //);
 
             _pXpYpZPoint = pXpYpZPoint;
             _nXpYpZPoint = nXpYpZPoint;

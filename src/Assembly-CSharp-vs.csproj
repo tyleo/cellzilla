@@ -60,7 +60,6 @@
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingEntity.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingMetaball.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingPoint.cs" />
-     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingPointPair.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

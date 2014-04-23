@@ -86,7 +86,11 @@ namespace Tyleo.MarchingCubes
                         GetZLocation(points.GetLength(Z_INDEX), k)
                     );
 
-                zEdges[i + 0, j + 0, k - 1] = null;
+                zEdges[i + 0, j + 0, k - 1] =
+                    new MarchingEdge(
+                        points[i + 0, j + 0, k - 1],
+                        points[i + 0, j + 0, k + 0]
+                    );
             }
         }
 
@@ -104,7 +108,11 @@ namespace Tyleo.MarchingCubes
                         GetZLocation(points.GetLength(Z_INDEX), k)
                     );
 
-                yEdges[i + 0, j - 1, k + 0] = null;
+                yEdges[i + 0, j - 1, k + 0] =
+                    new MarchingEdge(
+                        points[i + 0, j - 1, k + 0],
+                        points[i + 0, j + 0, k + 0]
+                    );
             }
         }
 
@@ -122,7 +130,11 @@ namespace Tyleo.MarchingCubes
                         GetZLocation(points.GetLength(Z_INDEX), k)
                     );
 
-                xEdges[i - 1, j + 0, k + 0] = null;
+                xEdges[i - 1, j + 0, k + 0] =
+                    new MarchingEdge(
+                        points[i - 1, j + 0, k + 0],
+                        points[i + 0, j + 0, k + 0]
+                    );
             }
         }
 
@@ -141,8 +153,16 @@ namespace Tyleo.MarchingCubes
                             GetZLocation(points.GetLength(Z_INDEX), k)
                         );
 
-                    yEdges[i + 0, j - 1, k + 0] = null;
-                    zEdges[i + 0, j + 0, k - 1] = null;
+                    yEdges[i + 0, j - 1, k + 0] =
+                        new MarchingEdge(
+                            points[i + 0, j - 1, k + 0],
+                            points[i + 0, j + 0, k + 0]
+                        );
+                    zEdges[i + 0, j + 0, k - 1] =
+                        new MarchingEdge(
+                            points[i + 0, j + 0, k - 1],
+                            points[i + 0, j + 0, k + 0]
+                        );
                 }
             }
         }
@@ -162,8 +182,16 @@ namespace Tyleo.MarchingCubes
                             GetZLocation(points.GetLength(Z_INDEX), k)
                         );
 
-                    xEdges[i - 1, j + 0, k + 0] = null;
-                    zEdges[i + 0, j + 0, k - 1] = null;
+                    xEdges[i - 1, j + 0, k + 0] =
+                        new MarchingEdge(
+                            points[i - 1, j + 0, k + 0],
+                            points[i + 0, j + 0, k + 0]
+                        );
+                    zEdges[i + 0, j + 0, k - 1] =
+                        new MarchingEdge(
+                            points[i + 0, j + 0, k - 1],
+                            points[i + 0, j + 0, k + 0]
+                        );
                 }
             }
         }
@@ -183,8 +211,16 @@ namespace Tyleo.MarchingCubes
                             GetZLocation(points.GetLength(Z_INDEX), k)
                         );
 
-                    xEdges[i - 1, j + 0, k + 0] = null;
-                    yEdges[i + 0, j - 1, k + 0] = null;
+                    xEdges[i - 1, j + 0, k + 0] =
+                        new MarchingEdge(
+                            points[i - 1, j + 0, k + 0],
+                            points[i + 0, j + 0, k + 0]
+                        );
+                    yEdges[i + 0, j - 1, k + 0] =
+                        new MarchingEdge(
+                            points[i + 0, j - 1, k + 0],
+                            points[i + 0, j + 0, k + 0]
+                        );
                 }
             }
         }
@@ -204,11 +240,48 @@ namespace Tyleo.MarchingCubes
                                 GetZLocation(points.GetLength(Z_INDEX), k)
                             );
 
-                        xEdges[i - 1, j + 0, k + 0] = null;
-                        yEdges[i + 0, j - 1, k + 0] = null;
-                        zEdges[i + 0, j + 0, k - 1] = null;
+                        xEdges[i - 1, j + 0, k + 0] =
+                            new MarchingEdge(
+                                points[i - 1, j + 0, k + 0],
+                                points[i + 0, j + 0, k + 0]
+                            );
+                        yEdges[i + 0, j - 1, k + 0] =
+                            new MarchingEdge(
+                                points[i + 0, j - 1, k + 0],
+                                points[i + 0, j + 0, k + 0]
+                            );
+                        zEdges[i + 0, j + 0, k - 1] =
+                            new MarchingEdge(
+                                points[i + 0, j + 0, k - 1],
+                                points[i + 0, j + 0, k + 0]
+                            );
 
-                        cubes[i - 1, j - 1, k - 1] = null;
+                        cubes[i - 1, j - 1, k - 1] =
+                            new MarchingCube(
+                                points[i - 1, j - 1, k - 1],
+                                points[i - 1, j - 1, k + 0],
+                                points[i - 1, j + 0, k - 1],
+                                points[i - 1, j + 0, k + 0],
+                                points[i + 0, j - 1, k - 1],
+                                points[i + 0, j - 1, k + 0],
+                                points[i + 0, j + 0, k - 1],
+                                points[i + 0, j + 0, k + 0],
+
+                                xEdges[i - 1, j - 1, k - 1],
+                                xEdges[i - 1, j - 1, k + 0],
+                                xEdges[i - 1, j + 0, k - 1],
+                                xEdges[i - 1, j + 0, k + 0],
+
+                                yEdges[i - 1, j - 1, k - 1],
+                                yEdges[i + 0, j - 1, k - 1],
+                                yEdges[i - 1, j - 1, k + 0],
+                                yEdges[i + 0, j - 1, k + 0],
+
+                                zEdges[i - 1, j - 1, k - 1],
+                                zEdges[i - 1, j + 0, k - 1],
+                                zEdges[i + 0, j - 1, k - 1],
+                                zEdges[i + 0, j + 0, k - 1]
+                            );
                     }
                 }
             }
