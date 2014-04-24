@@ -5,8 +5,6 @@ namespace Tyleo.MarchingCubes
     public sealed class MarchingMetaball :
         MarchingEntity
     {
-        private float _radius;
-
         /// <summary>
         /// Provides an intensity which decreases from the center of the metaball.
         /// </summary>
@@ -19,21 +17,9 @@ namespace Tyleo.MarchingCubes
         /// </returns>
         public sealed override float GetIntensity(Vector3 worldSpaceVertex)
         {
-            var metaballToWorldSpaceVertex = worldSpaceVertex - transform.position;
+            var metaballToWorldSpaceVertex = transform.InverseTransformPoint(worldSpaceVertex);
 
-            return _radius / metaballToWorldSpaceVertex.sqrMagnitude;
-        }
-
-        private void Start()
-        {
-            // The circumference is the average of the scale in each direction; the radius is half
-            // of that.
-            _radius =
-                (
-                    transform.lossyScale.x +
-                    transform.lossyScale.y +
-                    transform.lossyScale.z
-                ) / 6.0f;
+            return 0.5f / metaballToWorldSpaceVertex.sqrMagnitude;
         }
     }
 }
