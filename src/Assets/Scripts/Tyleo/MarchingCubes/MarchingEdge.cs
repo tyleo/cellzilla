@@ -29,8 +29,7 @@ namespace Tyleo.MarchingCubes
             _edgeVertex = GetEdgeVertex(intensityThreshold);
             _edgeNormal = GetEdgeNormal(marchingEntities);
 
-            meshData.AddVertex(_edgeVertex);
-            meshData.AddNormal(_edgeNormal);
+            meshData.AddVertexAndNormal(_edgeVertex, _edgeNormal);
         }
 
         private Vector3 GetEdgeVertex(float intensityThreshold)

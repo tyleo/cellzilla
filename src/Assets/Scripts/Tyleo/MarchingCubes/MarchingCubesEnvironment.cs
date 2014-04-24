@@ -7,6 +7,16 @@ namespace Tyleo.MarchingCubes
     public sealed class MarchingCubesEnvironment :
         MonoBehaviour
     {
+        // The number of vertices and triangle indices in the mesh must be predicted because we can
+        // only get memory on the graphics card once. Therefore, we want to take a little more than
+        // we need. By tweaking the values below we can estimate a little more or less.
+        private const int VERTEX_ESTIMATION_CONSTANT = 7;
+        private const int TRIANGLE_ESTIMATION_CONSTANT = 2;
+
+        [SerializeField]
+        private int _predictedNumberOfVertices = -1;
+        [SerializeField]
+        private int _predictedNumberOfTriangleIndices = -1;
         [SerializeField]
         private int _cubesAlongX = 20;
         [SerializeField]
@@ -18,7 +28,7 @@ namespace Tyleo.MarchingCubes
         [SerializeField]
         private List<MarchingEntity> _marchingEntities = new List<MarchingEntity>();
 
-        private MeshFilter _meshFilter;
+        private Mesh _mesh;
         private UVCreator _uvCreator;
 
         private MarchingCube[, ,] _cubes;
@@ -38,25 +48,36 @@ namespace Tyleo.MarchingCubes
                     _threshold
                 );
 
-            var meshDataProvider = MarchingMeshGenerator.GenerateMeshData(marchingMeshGeneratorParameterPack, _meshFilter.mesh.vertexCount, _meshFilter.mesh.triangles.Length);
+            var meshDataProvider = MarchingMeshGenerator.GenerateMeshData(marchingMeshGeneratorParameterPack, _predictedNumberOfVertices, _predictedNumberOfTriangleIndices);
 
-            var vertices = meshDataProvider.GetVetrices();
-
-            _meshFilter.mesh = new Mesh() {
-                vertices = vertices,
-                uv = _uvCreator == null ? new Vector2[vertices.Length] : _uvCreator.CreateUVs(vertices),
-                triangles = meshDataProvider.GetTriangles(),
-                normals = meshDataProvider.GetNormals()
-            };
+            _mesh.vertices = meshDataProvider.GetVetrices();
+            _mesh.uv = _uvCreator == null ? new Vector2[_mesh.vertices.Length] : _uvCreator.CreateUVs(_mesh.vertices);
+            _mesh.triangles = meshDataProvider.GetTriangles();
+            _mesh.normals = meshDataProvider.GetNormals();
         }
 
         private void Start()
         {
-            _meshFilter = GetComponent<MeshFilter>();
+            _mesh = new Mesh()
+            {
+            };
+            _mesh.MarkDynamic();
+            GetComponent<MeshFilter>().mesh = _mesh;
 
             _uvCreator = GetComponent<UVCreator>();
 
             _cubes = CubeLatticeGenerator.CreateCubes(_cubesAlongX, _cubesAlongY, _cubesAlongZ);
+
+            if (_predictedNumberOfVertices == -1)
+            {
+                _predictedNumberOfVertices = _cubesAlongX * _cubesAlongY * _cubesAlongZ / VERTEX_ESTIMATION_CONSTANT;
+            }
+
+            if (_predictedNumberOfTriangleIndices == -1)
+            {
+                var estimationValue = _cubesAlongX * _cubesAlongY * _cubesAlongZ / TRIANGLE_ESTIMATION_CONSTANT;
+                _predictedNumberOfTriangleIndices = estimationValue - estimationValue % 3;
+            }
         }
     }
 }
