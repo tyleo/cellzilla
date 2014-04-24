@@ -15,8 +15,8 @@ namespace Tyleo.MarchingCubes
 
                 result[i] =
                     new Vector2(
-                        thisVertex.x,
-                        thisVertex.y
+                        (thisVertex.x + 1) / 2,
+                        (thisVertex.y + 1) / 2
                     );
             }
 
