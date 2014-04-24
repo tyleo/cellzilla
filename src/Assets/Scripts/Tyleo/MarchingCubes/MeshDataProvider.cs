@@ -21,6 +21,7 @@ namespace Tyleo.MarchingCubes
 
         public Vector2[] GetUV()
         {
+            return new Vector2[0];
             throw new System.NotImplementedException();
         }
 

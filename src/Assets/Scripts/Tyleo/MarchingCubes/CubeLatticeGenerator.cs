@@ -274,17 +274,17 @@ namespace Tyleo.MarchingCubes
 
         private static float GetXLocation(int pointsAlongX, int xIndex)
         {
-            return (float)xIndex - (float)(pointsAlongX - 1) / 2.0f;
+            return ((float)xIndex - (float)(pointsAlongX - 1) / 2.0f) / (float)pointsAlongX;
         }
 
         private static float GetYLocation(int pointsAlongY, int yIndex)
         {
-            return (float)yIndex - (float)(pointsAlongY - 1) / 2.0f;
+            return ((float)yIndex - (float)(pointsAlongY - 1) / 2.0f) / (float)pointsAlongY;
         }
 
         private static float GetZLocation(int pointsAlongZ, int zIndex)
         {
-            return (float)zIndex - (float)(pointsAlongZ - 1) / 2.0f;
+            return ((float)zIndex - (float)(pointsAlongZ - 1) / 2.0f) / (float)pointsAlongZ;
         }
     }
 }

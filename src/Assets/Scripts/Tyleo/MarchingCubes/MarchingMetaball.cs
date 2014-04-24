@@ -30,9 +30,9 @@ namespace Tyleo.MarchingCubes
             // of that.
             _radius =
                 (
-                    transform.localScale.x +
-                    transform.localScale.y +
-                    transform.localScale.z
+                    transform.lossyScale.x +
+                    transform.lossyScale.y +
+                    transform.lossyScale.z
                 ) / 6.0f;
         }
     }

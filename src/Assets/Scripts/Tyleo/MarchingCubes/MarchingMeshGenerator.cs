@@ -47,6 +47,7 @@ namespace Tyleo.MarchingCubes
                 {
                     // If a mesh is around the entity, we check all of the cubes next to the one we
                     // found on the surface of the mesh.
+
                     UpdateCubesRecursively(parameters, meshData, i, j, k);
                 }
             }
@@ -117,7 +118,6 @@ namespace Tyleo.MarchingCubes
         private static bool ProcessCube(MarchingMeshGeneratorParameterPack parameters, MeshDataProvider meshData, int i, int j, int k)
         {
             var cube = parameters.GetCube(i, j, k);
-
             if (cube.LastFrameTouched == parameters.CurrentFrameIndex)
             {
                 return false;
