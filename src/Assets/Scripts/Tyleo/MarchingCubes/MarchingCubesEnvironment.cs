@@ -19,6 +19,7 @@ namespace Tyleo.MarchingCubes
         private List<MarchingEntity> _marchingEntities = new List<MarchingEntity>();
 
         private Mesh _mesh;
+        private UVCreator _uvCreator;
 
         private MarchingCube[, ,] _cubes;
 
@@ -40,7 +41,7 @@ namespace Tyleo.MarchingCubes
             var meshDataProvider = MarchingMeshGenerator.GenerateMeshData(marchingMeshGeneratorParameterPack, _mesh.vertexCount, _mesh.triangles.Length);
 
             _mesh.vertices = meshDataProvider.GetVetrices();
-            _mesh.uv = meshDataProvider.GetUV();
+            _mesh.uv = _uvCreator == null ? new Vector2[_mesh.vertexCount] : _uvCreator.CreateUVs(_mesh.vertices);
             _mesh.triangles = meshDataProvider.GetTriangles();
             _mesh.normals = meshDataProvider.GetNormals();
         }
@@ -50,6 +51,8 @@ namespace Tyleo.MarchingCubes
             var meshFilter = GetComponent<MeshFilter>();
             meshFilter.mesh = new Mesh();
             _mesh = meshFilter.mesh;
+
+            _uvCreator = GetComponent<UVCreator>();
 
             _cubes = CubeLatticeGenerator.CreateCubes(_cubesAlongX, _cubesAlongY, _cubesAlongZ);
         }

@@ -37,8 +37,8 @@ namespace Tyleo.MarchingCubes
         {
             return
                 Vector3.Lerp(
-                    _marchingPoint0.WorldSpaceCoordinates,
-                    _marchingPoint1.WorldSpaceCoordinates,
+                    _marchingPoint0.LocalSpaceCoordinates,
+                    _marchingPoint1.LocalSpaceCoordinates,
                     (intensityThreshold - _marchingPoint0.Intensity) / (_marchingPoint1.Intensity - _marchingPoint0.Intensity)
                 );
         }

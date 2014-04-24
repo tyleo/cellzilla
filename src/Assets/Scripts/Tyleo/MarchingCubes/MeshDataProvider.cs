@@ -19,12 +19,6 @@ namespace Tyleo.MarchingCubes
             return _vertices.ToArray();
         }
 
-        public Vector2[] GetUV()
-        {
-            return new Vector2[0];
-            throw new System.NotImplementedException();
-        }
-
         public int[] GetTriangles()
         {
             return _triangles.ToArray();
