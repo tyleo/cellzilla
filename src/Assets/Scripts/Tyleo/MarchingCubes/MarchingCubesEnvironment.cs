@@ -18,7 +18,7 @@ namespace Tyleo.MarchingCubes
         [SerializeField]
         private List<MarchingEntity> _marchingEntities = new List<MarchingEntity>();
 
-        private Mesh _mesh;
+        private MeshFilter _meshFilter;
         private UVCreator _uvCreator;
 
         private MarchingCube[, ,] _cubes;
@@ -38,19 +38,21 @@ namespace Tyleo.MarchingCubes
                     _threshold
                 );
 
-            var meshDataProvider = MarchingMeshGenerator.GenerateMeshData(marchingMeshGeneratorParameterPack, _mesh.vertexCount, _mesh.triangles.Length);
+            var meshDataProvider = MarchingMeshGenerator.GenerateMeshData(marchingMeshGeneratorParameterPack, _meshFilter.mesh.vertexCount, _meshFilter.mesh.triangles.Length);
 
-            _mesh.vertices = meshDataProvider.GetVetrices();
-            _mesh.uv = _uvCreator == null ? new Vector2[_mesh.vertexCount] : _uvCreator.CreateUVs(_mesh.vertices);
-            _mesh.triangles = meshDataProvider.GetTriangles();
-            _mesh.normals = meshDataProvider.GetNormals();
+            var vertices = meshDataProvider.GetVetrices();
+
+            _meshFilter.mesh = new Mesh() {
+                vertices = vertices,
+                uv = _uvCreator == null ? new Vector2[vertices.Length] : _uvCreator.CreateUVs(vertices),
+                triangles = meshDataProvider.GetTriangles(),
+                normals = meshDataProvider.GetNormals()
+            };
         }
 
         private void Start()
         {
-            var meshFilter = GetComponent<MeshFilter>();
-            meshFilter.mesh = new Mesh();
-            _mesh = meshFilter.mesh;
+            _meshFilter = GetComponent<MeshFilter>();
 
             _uvCreator = GetComponent<UVCreator>();
 
