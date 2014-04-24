@@ -46,13 +46,7 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Scripts\ConstantRotation.cs" />
-     <Compile Include="Assets\Scripts\EdgeFlags.cs" />
-     <Compile Include="Assets\Scripts\MoveApartFromInput.cs" />
-     <Compile Include="Assets\Scripts\OriginalMarchingCubesEnvironment.cs" />
-     <Compile Include="Assets\Scripts\PointFlags.cs" />
-     <Compile Include="Assets\Scripts\Subsphere.cs" />
-     <Compile Include="Assets\Scripts\SubsphereSeeker.cs" />
+     <Compile Include="Assets\Scripts\Tyleo\ConstantRotation.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\AxisIndexProvider.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\CubeLatticeGenerator.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\EdgeFlags.cs" />
@@ -72,6 +66,7 @@
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\PointFlagsToEdgeConverter.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\PointIndex.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\UVCreator.cs" />
+     <Compile Include="Assets\Scripts\Tyleo\MoveApartFromInput.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

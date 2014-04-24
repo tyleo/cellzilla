@@ -18,11 +18,11 @@ namespace Tyleo.MarchingCubes
         [SerializeField]
         private int _predictedNumberOfTriangleIndices = -1;
         [SerializeField]
-        private int _cubesAlongX = 20;
+        private int _cubesAlongX = 40;
         [SerializeField]
-        private int _cubesAlongY = 20;
+        private int _cubesAlongY = 40;
         [SerializeField]
-        private int _cubesAlongZ = 20;
+        private int _cubesAlongZ = 40;
         [SerializeField]
         private float _threshold = 2.5f;
         [SerializeField]
