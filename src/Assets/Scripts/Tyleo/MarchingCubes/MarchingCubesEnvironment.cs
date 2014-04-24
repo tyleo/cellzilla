@@ -33,10 +33,11 @@ namespace Tyleo.MarchingCubes
                     _frameCount,
                     _cubes,
                     _marchingEntities,
-                    transform
+                    transform,
+                    _threshold
                 );
 
-            var meshDataProvider = MarchingMeshGenerator.GenerateMeshData(marchingMeshGeneratorParameterPack, _mesh.vertexCount);
+            var meshDataProvider = MarchingMeshGenerator.GenerateMeshData(marchingMeshGeneratorParameterPack, _mesh.vertexCount, _mesh.triangles.Length);
 
             _mesh.vertices = meshDataProvider.GetVetrices();
             _mesh.uv = meshDataProvider.GetUV();

@@ -4,9 +4,9 @@ namespace Tyleo.MarchingCubes
 {
     public static class MarchingMeshGenerator
     {
-        public static MeshDataProvider GenerateMeshData(MarchingMeshGeneratorParameterPack parameters, int predictedNumberOfVertices)
+        public static MeshDataProvider GenerateMeshData(MarchingMeshGeneratorParameterPack parameters, int predictedNumberOfVertices, int predictedNumberOfTriangleIndices)
         {
-            var result = new MeshDataProvider(predictedNumberOfVertices);
+            var result = new MeshDataProvider(predictedNumberOfVertices, predictedNumberOfTriangleIndices);
 
             UpdateCubes(parameters, result);
             return result;
@@ -123,9 +123,7 @@ namespace Tyleo.MarchingCubes
                 return false;
             }
 
-            var result = cube.Process(parameters.CurrentFrameIndex, parameters.CubeEnvironmentTransform, parameters.MarchingEntities);
-
-            cube.UpdateMesh(meshData);
+            var result = cube.Process(parameters.CurrentFrameIndex, parameters.CubeEnvironmentTransform, parameters.MarchingEntities, parameters.IntensityThreshold, meshData);
 
             return result;
         }

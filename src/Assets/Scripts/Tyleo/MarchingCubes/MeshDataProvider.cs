@@ -6,9 +6,13 @@ namespace Tyleo.MarchingCubes
     public sealed class MeshDataProvider
     {
         private readonly Queue<Vector3> _vertices;
-        private readonly Queue<Vector2> _uv;
         private readonly Queue<int> _triangles;
         private readonly Queue<Vector3> _normals;
+
+        public int GetCurrentEdgeIndex()
+        {
+            return _vertices.Count;
+        }
 
         public Vector3[] GetVetrices()
         {
@@ -17,7 +21,7 @@ namespace Tyleo.MarchingCubes
 
         public Vector2[] GetUV()
         {
-            return _uv.ToArray();
+            throw new System.NotImplementedException();
         }
 
         public int[] GetTriangles()
@@ -35,16 +39,9 @@ namespace Tyleo.MarchingCubes
             _vertices.Enqueue(vertex);
         }
 
-        public void AddUV(Vector2 uv)
+        public void AddTriangleVertexIndex(int triangleVertexIndex)
         {
-            _uv.Enqueue(uv);
-        }
-
-        public void AddTriangle(int triangleIndex0, int triangleIndex1, int triangleIndex2)
-        {
-            _triangles.Enqueue(triangleIndex0);
-            _triangles.Enqueue(triangleIndex1);
-            _triangles.Enqueue(triangleIndex2);
+            _triangles.Enqueue(triangleVertexIndex);
         }
 
         public void AddNormal(Vector3 normal)
@@ -52,11 +49,10 @@ namespace Tyleo.MarchingCubes
             _normals.Enqueue(normal);
         }
 
-        public MeshDataProvider(int predictedNumberOfVertices)
+        public MeshDataProvider(int predictedNumberOfVertices, int predictedNumberOfTriangleIndices)
         {
             _vertices = new Queue<Vector3>(predictedNumberOfVertices);
-            _uv = new Queue<Vector2>(predictedNumberOfVertices);
-            _triangles = new Queue<int>(predictedNumberOfVertices * 3);
+            _triangles = new Queue<int>(predictedNumberOfTriangleIndices);
             _normals = new Queue<Vector3>(predictedNumberOfVertices);
         }
     }
