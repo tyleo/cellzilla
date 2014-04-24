@@ -20,7 +20,7 @@ namespace Tyleo.MarchingCubes
         public uint LastFrameTouched { get { return _lastFrameTouched; } }
         public Vector3 EdgeVertex { get { return _edgeVertex; } }
         public Vector3 EdgeNormal { get { return _edgeNormal; } }
-        public int EdgeIndex { get { return _edgeIndex; } }
+        public int VertexIndex { get { return _edgeIndex; } }
 
         public void ProcessEdge(uint lastFrameTouched, IEnumerable<MarchingEntity> marchingEntities, float intensityThreshold, MeshDataProvider meshData)
         {

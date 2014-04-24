@@ -16,18 +16,7 @@ namespace Tyleo.MarchingCubes
         private readonly MarchingPoint _pXpYnZPoint;
         private readonly MarchingPoint _pXpYpZPoint;
 
-        private readonly MarchingEdge _zXnYnZEdge;
-        private readonly MarchingEdge _zXnYpZEdge;
-        private readonly MarchingEdge _zXpYnZEdge;
-        private readonly MarchingEdge _zXpYpZEdge;
-        private readonly MarchingEdge _nXzYnZEdge;
-        private readonly MarchingEdge _pXzYnZEdge;
-        private readonly MarchingEdge _nXzYpZEdge;
-        private readonly MarchingEdge _pXzYpZEdge;
-        private readonly MarchingEdge _nXnYzZEdge;
-        private readonly MarchingEdge _nXpYzZEdge;
-        private readonly MarchingEdge _pXnYzZEdge;
-        private readonly MarchingEdge _pXpYzZEdge;
+        private readonly MarchingEdge[] _machingEdges = new MarchingEdge[12];
 
         private uint _lastFrameTouched = 0;
 
@@ -40,18 +29,28 @@ namespace Tyleo.MarchingCubes
         public MarchingPoint PxPyNzPoint { get { return _pXpYnZPoint; } }
         public MarchingPoint PxPyPzPoint { get { return _pXpYpZPoint; } }
 
-        public MarchingEdge ZxNyNzEdge { get { return _zXnYnZEdge; } }
-        public MarchingEdge ZxNyPzEdge { get { return _zXnYpZEdge; } }
-        public MarchingEdge ZxPyNzEdge { get { return _zXpYnZEdge; } }
-        public MarchingEdge ZxPyPzEdge { get { return _zXpYpZEdge; } }
-        public MarchingEdge NxZyNzEdge { get { return _nXzYnZEdge; } }
-        public MarchingEdge PxZyNzEdge { get { return _pXzYnZEdge; } }
-        public MarchingEdge NxZyPzEdge { get { return _nXzYpZEdge; } }
-        public MarchingEdge PxZyPzEdge { get { return _pXzYpZEdge; } }
-        public MarchingEdge NxNyZzEdge { get { return _nXnYzZEdge; } }
-        public MarchingEdge NxPyZzEdge { get { return _nXpYzZEdge; } }
-        public MarchingEdge PxNyZzEdge { get { return _pXnYzZEdge; } }
-        public MarchingEdge PxPyZzEdge { get { return _pXpYzZEdge; } }
+        public MarchingEdge ZxNyNzEdge { get { return GetEdge(EdgeIndex.ZxNyNz); } set { SetEdge(EdgeIndex.ZxNyNz, value); } }
+        public MarchingEdge ZxNyPzEdge { get { return GetEdge(EdgeIndex.ZxNyPz); } set { SetEdge(EdgeIndex.ZxNyPz, value); } }
+        public MarchingEdge ZxPyNzEdge { get { return GetEdge(EdgeIndex.ZxPyNz); } set { SetEdge(EdgeIndex.ZxPyNz, value); } }
+        public MarchingEdge ZxPyPzEdge { get { return GetEdge(EdgeIndex.ZxPyPz); } set { SetEdge(EdgeIndex.ZxPyPz, value); } }
+        public MarchingEdge NxZyNzEdge { get { return GetEdge(EdgeIndex.NxZyNz); } set { SetEdge(EdgeIndex.NxZyNz, value); } }
+        public MarchingEdge PxZyNzEdge { get { return GetEdge(EdgeIndex.PxZyNz); } set { SetEdge(EdgeIndex.PxZyNz, value); } }
+        public MarchingEdge NxZyPzEdge { get { return GetEdge(EdgeIndex.NxZyPz); } set { SetEdge(EdgeIndex.NxZyPz, value); } }
+        public MarchingEdge PxZyPzEdge { get { return GetEdge(EdgeIndex.PxZyPz); } set { SetEdge(EdgeIndex.PxZyPz, value); } }
+        public MarchingEdge NxNyZzEdge { get { return GetEdge(EdgeIndex.NxNyZz); } set { SetEdge(EdgeIndex.NxNyZz, value); } }
+        public MarchingEdge NxPyZzEdge { get { return GetEdge(EdgeIndex.NxPyZz); } set { SetEdge(EdgeIndex.NxPyZz, value); } }
+        public MarchingEdge PxNyZzEdge { get { return GetEdge(EdgeIndex.PxNyZz); } set { SetEdge(EdgeIndex.PxNyZz, value); } }
+        public MarchingEdge PxPyZzEdge { get { return GetEdge(EdgeIndex.PxPyZz); } set { SetEdge(EdgeIndex.PxPyZz, value); } }
+
+        private MarchingEdge GetEdge(EdgeIndex edgeIndex)
+        {
+            return _machingEdges[(ushort)edgeIndex];
+        }
+
+        private void SetEdge(EdgeIndex edgeIndex, MarchingEdge value)
+        {
+            _machingEdges[(ushort)edgeIndex] = value;
+        }
 
         public uint LastFrameTouched { get { return _lastFrameTouched; } }
 
@@ -143,7 +142,7 @@ namespace Tyleo.MarchingCubes
 
                 foreach (var edgeIndex in PointFlagsToEdgeConverter.GetEdgeIndicesFromPointFlags(activatedPointFlags))
                 {
-                    meshData.AddTriangleVertexIndex(GetIntegralEdgeIndex(edgeIndex));
+                    meshData.AddTriangleVertexIndex(GetEdge(edgeIndex).VertexIndex);
                 }
 
                 return true;
@@ -173,41 +172,6 @@ namespace Tyleo.MarchingCubes
             }
 
             edge.ProcessEdge(LastFrameTouched, marchingEntities, intensityThreshold, meshData);
-        }
-
-        private int GetIntegralEdgeIndex(EdgeIndex edgeIndex)
-        {
-            switch (edgeIndex)
-            {
-                case EdgeIndex.None:
-                    throw new Exception();
-                case EdgeIndex.ZxNyNz:
-                    return ZxNyNzEdge.EdgeIndex;
-                case EdgeIndex.ZxNyPz:
-                    return ZxNyPzEdge.EdgeIndex;
-                case EdgeIndex.ZxPyNz:
-                    return ZxPyNzEdge.EdgeIndex;
-                case EdgeIndex.ZxPyPz:
-                    return ZxPyPzEdge.EdgeIndex;
-                case EdgeIndex.NxZyNz:
-                    return NxZyNzEdge.EdgeIndex;
-                case EdgeIndex.PxZyNz:
-                    return PxZyNzEdge.EdgeIndex;
-                case EdgeIndex.NxZyPz:
-                    return NxZyPzEdge.EdgeIndex;
-                case EdgeIndex.PxZyPz:
-                    return PxZyPzEdge.EdgeIndex;
-                case EdgeIndex.NxNyZz:
-                    return NxNyZzEdge.EdgeIndex;
-                case EdgeIndex.NxPyZz:
-                    return NxPyZzEdge.EdgeIndex;
-                case EdgeIndex.PxNyZz:
-                    return PxNyZzEdge.EdgeIndex;
-                case EdgeIndex.PxPyZz:
-                    return PxPyZzEdge.EdgeIndex;
-                default:
-                    throw new Exception;
-            }
         }
 
         public MarchingCube(
@@ -303,18 +267,18 @@ namespace Tyleo.MarchingCubes
             _pXpYnZPoint = pXpYnZPoint;
             _pXpYpZPoint = pXpYpZPoint;
 
-            _zXnYnZEdge = zXnYnZEdge;
-            _zXnYpZEdge = zXnYpZEdge;
-            _zXpYnZEdge = zXpYnZEdge;
-            _zXpYpZEdge = zXpYpZEdge;
-            _nXzYnZEdge = nXzYnZEdge;
-            _pXzYnZEdge = pXzYnZEdge;
-            _nXzYpZEdge = nXzYpZEdge;
-            _pXzYpZEdge = pXzYpZEdge;
-            _nXnYzZEdge = nXnYzZEdge;
-            _nXpYzZEdge = nXpYzZEdge;
-            _pXnYzZEdge = pXnYzZEdge;
-            _pXpYzZEdge = pXpYzZEdge;
+            ZxNyNzEdge = zXnYnZEdge;
+            ZxNyPzEdge = zXnYpZEdge;
+            ZxPyNzEdge = zXpYnZEdge;
+            ZxPyPzEdge = zXpYpZEdge;
+            NxZyNzEdge = nXzYnZEdge;
+            PxZyNzEdge = pXzYnZEdge;
+            NxZyPzEdge = nXzYpZEdge;
+            PxZyPzEdge = pXzYpZEdge;
+            NxNyZzEdge = nXnYzZEdge;
+            NxPyZzEdge = nXpYzZEdge;
+            PxNyZzEdge = pXnYzZEdge;
+            PxPyZzEdge = pXpYzZEdge;
         }
     }
 }

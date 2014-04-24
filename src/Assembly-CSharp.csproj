@@ -63,7 +63,7 @@
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingCube.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingCubesData.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingCubesEnvironment.cs" />
-    <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingCubesTableProvider.cs" />
+    <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\PointFlagsToEdgeConverter.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingEdge.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingEntity.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingMeshGenerator.cs" />
