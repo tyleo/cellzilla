@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Tyleo.MarchingCubes
+namespace PointTableToEdgeTableGenerator
 {
     [Flags]
     public enum PointFlags :

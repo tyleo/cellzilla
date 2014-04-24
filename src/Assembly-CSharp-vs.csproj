@@ -56,6 +56,8 @@
      <Compile Include="Assets\Scripts\Test.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\AxisIndexProvider.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\CubeLatticeGenerator.cs" />
+     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\EdgeFlags.cs" />
+     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\EdgeIndex.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\Int32Extensions.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingCube.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingCubesData.cs" />
@@ -67,6 +69,9 @@
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingMetaball.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingPoint.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MeshDataProvider.cs" />
+     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\PointFlags.cs" />
+     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\PointFlagsToEdgeConverter.cs" />
+     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\PointIndex.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

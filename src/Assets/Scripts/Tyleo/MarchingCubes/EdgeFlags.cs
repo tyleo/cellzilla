@@ -8,18 +8,18 @@ namespace Tyleo.MarchingCubes
     {
         None = 0,
 
-        ZxNyNz = None + 1,
-        ZxNyPz = ZxNyNz << 1,
-        ZxPyNz = ZxNyPz << 1,
-        ZxPyPz = ZxPyNz << 1,
-        NxZyNz = ZxPyPz << 1,
-        PxZyNz = NxZyNz << 1,
-        NxZyPz = PxZyNz << 1,
-        PxZyPz = NxZyPz << 1,
-        NxNyZz = PxZyPz << 1,
-        NxPyZz = NxNyZz << 1,
-        PxNyZz = NxPyZz << 1,
-        PxPyZz = PxNyZz << 1,
+        ZxNyNz = 1 << (byte)EdgeIndex.ZxNyNz,
+        ZxNyPz = 1 << (byte)EdgeIndex.ZxNyPz,
+        ZxPyNz = 1 << (byte)EdgeIndex.ZxPyNz,
+        ZxPyPz = 1 << (byte)EdgeIndex.ZxPyPz,
+        NxZyNz = 1 << (byte)EdgeIndex.NxZyNz,
+        PxZyNz = 1 << (byte)EdgeIndex.PxZyNz,
+        NxZyPz = 1 << (byte)EdgeIndex.NxZyPz,
+        PxZyPz = 1 << (byte)EdgeIndex.PxZyPz,
+        NxNyZz = 1 << (byte)EdgeIndex.NxNyZz,
+        NxPyZz = 1 << (byte)EdgeIndex.NxPyZz,
+        PxNyZz = 1 << (byte)EdgeIndex.PxNyZz,
+        PxPyZz = 1 << (byte)EdgeIndex.PxPyZz,
 
         All =
             ZxNyNz |

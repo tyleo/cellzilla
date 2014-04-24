@@ -63,7 +63,6 @@
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingCube.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingCubesData.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingCubesEnvironment.cs" />
-    <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\PointFlagsToEdgeConverter.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingEdge.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingEntity.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingMeshGenerator.cs" />
@@ -72,6 +71,8 @@
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MarchingPoint.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\MeshDataProvider.cs" />
     <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\PointFlags.cs" />
+    <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\PointFlagsToEdgeConverter.cs" />
+    <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\PointIndex.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
