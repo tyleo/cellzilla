@@ -14,7 +14,7 @@ namespace Tyleo.MarchingCubes
         [SerializeField]
         private int _cubesAlongZ = 20;
         [SerializeField]
-        private float _threshold = 8.0f;
+        private float _threshold = 2.5f;
         [SerializeField]
         private List<MarchingEntity> _marchingEntities = new List<MarchingEntity>();
 
