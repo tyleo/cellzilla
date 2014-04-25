@@ -1,15 +1,18 @@
 ﻿using UnityEngine;
 
-public sealed class ConstantRotation :
-    MonoBehaviour
+namespace Tyleo
 {
-    [SerializeField]
-    private float _degreesPerSecond = 90.0f;
-    [SerializeField]
-    private Vector3 _rotationAxis = new Vector3(1, 0, 0);
-
-    public void Update()
+    public sealed class ConstantRotation :
+        MonoBehaviour
     {
-        transform.Rotate(_rotationAxis, _degreesPerSecond * Time.deltaTime);
+        [SerializeField]
+        private float _degreesPerSecond = 90.0f;
+        [SerializeField]
+        private Vector3 _rotationAxis = new Vector3(1, 0, 0);
+
+        public void Update()
+        {
+            transform.Rotate(_rotationAxis, _degreesPerSecond * Time.deltaTime);
+        }
     }
 }

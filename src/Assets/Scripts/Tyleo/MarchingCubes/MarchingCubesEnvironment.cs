@@ -10,8 +10,8 @@ namespace Tyleo.MarchingCubes
         // The number of vertices and triangle indices in the mesh must be predicted because we can
         // only get memory on the graphics card once. Therefore, we want to take a little more than
         // we need. By tweaking the values below we can estimate a little more or less.
-        private const int VERTEX_ESTIMATION_CONSTANT = 7;
-        private const int TRIANGLE_ESTIMATION_CONSTANT = 2;
+        private const float VERTEX_ESTIMATION_CONSTANT = 5.0f;
+        private const float TRIANGLE_ESTIMATION_CONSTANT = 0.5f;
 
         [SerializeField]
         private int _predictedNumberOfVertices = -1;
@@ -24,7 +24,7 @@ namespace Tyleo.MarchingCubes
         [SerializeField]
         private int _cubesAlongZ = 40;
         [SerializeField]
-        private float _threshold = 2.5f;
+        private float _threshold = 8.0f;
         [SerializeField]
         private List<MarchingEntity> _marchingEntities = new List<MarchingEntity>();
 
@@ -70,12 +70,12 @@ namespace Tyleo.MarchingCubes
 
             if (_predictedNumberOfVertices == -1)
             {
-                _predictedNumberOfVertices = _cubesAlongX * _cubesAlongY * _cubesAlongZ / VERTEX_ESTIMATION_CONSTANT;
+                _predictedNumberOfVertices = (int)(_cubesAlongX * _cubesAlongY * _cubesAlongZ / VERTEX_ESTIMATION_CONSTANT);
             }
 
             if (_predictedNumberOfTriangleIndices == -1)
             {
-                var estimationValue = _cubesAlongX * _cubesAlongY * _cubesAlongZ / TRIANGLE_ESTIMATION_CONSTANT;
+                var estimationValue = (int)(_cubesAlongX * _cubesAlongY * _cubesAlongZ / TRIANGLE_ESTIMATION_CONSTANT);
                 _predictedNumberOfTriangleIndices = estimationValue - estimationValue % 3;
             }
         }

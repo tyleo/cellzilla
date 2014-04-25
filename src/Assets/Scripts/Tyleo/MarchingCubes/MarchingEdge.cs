@@ -22,12 +22,12 @@ namespace Tyleo.MarchingCubes
         public Vector3 EdgeNormal { get { return _edgeNormal; } }
         public int VertexIndex { get { return _edgeIndex; } }
 
-        public void ProcessEdge(uint lastFrameTouched, IEnumerable<MarchingEntity> marchingEntities, float intensityThreshold, MeshDataProvider meshData)
+        public void ProcessEdge(uint lastFrameTouched, IEnumerable<MarchingEntityEnvironmentPositionPair> marchingEntitiesWithEnvironmentPositions, float intensityThreshold, MeshDataProvider meshData)
         {
             _lastFrameTouched = lastFrameTouched;
             _edgeIndex = meshData.GetCurrentEdgeIndex();
             _edgeVertex = GetEdgeVertex(intensityThreshold);
-            _edgeNormal = GetEdgeNormal(marchingEntities);
+            _edgeNormal = GetEdgeNormal(marchingEntitiesWithEnvironmentPositions);
 
             meshData.AddVertexAndNormal(_edgeVertex, _edgeNormal);
         }
@@ -42,13 +42,13 @@ namespace Tyleo.MarchingCubes
                 );
         }
 
-        private Vector3 GetEdgeNormal(IEnumerable<MarchingEntity> marchingEntities)
+        private Vector3 GetEdgeNormal(IEnumerable<MarchingEntityEnvironmentPositionPair> marchingEntitiesWithEnvironmentPositions)
         {
             var normal = Vector3.zero;
-            foreach (var marchingEntity in marchingEntities)
+            foreach (var marchingEntityWithEnvironmentPosition in marchingEntitiesWithEnvironmentPositions)
             {
-                var entityToVertex = _edgeVertex - marchingEntity.transform.position;
-                normal += entityToVertex * marchingEntity.GetIntensity(_edgeVertex);
+                var edgeToEntity = marchingEntityWithEnvironmentPosition.EnvironmentSpacePosition - _edgeVertex;
+                normal += edgeToEntity * marchingEntityWithEnvironmentPosition.MarchingEntity.GetIntensity(marchingEntityWithEnvironmentPosition.EnvironmentSpacePosition, _edgeVertex);
             }
             return normal.normalized;
         }

@@ -53,36 +53,36 @@ namespace Tyleo.MarchingCubes
 
         public uint LastFrameTouched { get { return _lastFrameTouched; } }
 
-        public bool Process(uint currentFrameIndex, Transform environmentTransform, IEnumerable<MarchingEntity> marchingEntities, float intensityThreshold, MeshDataProvider meshData)
+        public bool Process(uint currentFrameIndex, IEnumerable<MarchingEntityEnvironmentPositionPair> marchingEntitiesWithEnvironmentPositions, float intensityThreshold, MeshDataProvider meshData)
         {
             _lastFrameTouched = currentFrameIndex;
 
-            ProcessPoints(environmentTransform, marchingEntities);
+            ProcessPoints(marchingEntitiesWithEnvironmentPositions);
 
-            return ProcessEdges(marchingEntities, intensityThreshold, meshData);
+            return ProcessEdges(marchingEntitiesWithEnvironmentPositions, intensityThreshold, meshData);
         }
 
-        private void ProcessPoints(Transform environmentTransform, IEnumerable<MarchingEntity> marchingEntities)
+        private void ProcessPoints(IEnumerable<MarchingEntityEnvironmentPositionPair> marchingEntitiesWithEnvironmentPositions)
         {
-            ProcessPoint(NxNyNzPoint, environmentTransform, marchingEntities);
-            ProcessPoint(NxNyPzPoint, environmentTransform, marchingEntities);
-            ProcessPoint(NxPyNzPoint, environmentTransform, marchingEntities);
-            ProcessPoint(NxPyPzPoint, environmentTransform, marchingEntities);
-            ProcessPoint(PxNyNzPoint, environmentTransform, marchingEntities);
-            ProcessPoint(PxNyPzPoint, environmentTransform, marchingEntities);
-            ProcessPoint(PxPyNzPoint, environmentTransform, marchingEntities);
-            ProcessPoint(PxPyPzPoint, environmentTransform, marchingEntities);
+            ProcessPoint(NxNyNzPoint, marchingEntitiesWithEnvironmentPositions);
+            ProcessPoint(NxNyPzPoint, marchingEntitiesWithEnvironmentPositions);
+            ProcessPoint(NxPyNzPoint, marchingEntitiesWithEnvironmentPositions);
+            ProcessPoint(NxPyPzPoint, marchingEntitiesWithEnvironmentPositions);
+            ProcessPoint(PxNyNzPoint, marchingEntitiesWithEnvironmentPositions);
+            ProcessPoint(PxNyPzPoint, marchingEntitiesWithEnvironmentPositions);
+            ProcessPoint(PxPyNzPoint, marchingEntitiesWithEnvironmentPositions);
+            ProcessPoint(PxPyPzPoint, marchingEntitiesWithEnvironmentPositions);
         }
 
-        private void ProcessPoint(MarchingPoint point, Transform environmentTransform, IEnumerable<MarchingEntity> marchingEntities)
+        private void ProcessPoint(MarchingPoint point, IEnumerable<MarchingEntityEnvironmentPositionPair> marchingEntitiesWithEnvironmentPositions)
         {
             if (point.LastFrameTouched != LastFrameTouched)
             {
-                point.Process(LastFrameTouched, environmentTransform, marchingEntities);
+                point.Process(LastFrameTouched, marchingEntitiesWithEnvironmentPositions);
             }
         }
 
-        private bool ProcessEdges(IEnumerable<MarchingEntity> marchingEntities, float intensityThreshold, MeshDataProvider meshData)
+        private bool ProcessEdges(IEnumerable<MarchingEntityEnvironmentPositionPair> marchingEntitiesWithEnvironmentPositions, float intensityThreshold, MeshDataProvider meshData)
         {
             var activatedPointFlags = GetPointFlags(intensityThreshold);
 
@@ -92,51 +92,51 @@ namespace Tyleo.MarchingCubes
             {
                 if (activatedEdgeFlags.HasFlags(EdgeFlags.ZxNyNz))
                 {
-                    ProcessEdge(ZxNyNzEdge, marchingEntities, intensityThreshold, meshData);
+                    ProcessEdge(ZxNyNzEdge, marchingEntitiesWithEnvironmentPositions, intensityThreshold, meshData);
                 }
                 if (activatedEdgeFlags.HasFlags(EdgeFlags.ZxNyPz))
                 {
-                    ProcessEdge(ZxNyPzEdge, marchingEntities, intensityThreshold, meshData);
+                    ProcessEdge(ZxNyPzEdge, marchingEntitiesWithEnvironmentPositions, intensityThreshold, meshData);
                 }
                 if (activatedEdgeFlags.HasFlags(EdgeFlags.ZxPyNz))
                 {
-                    ProcessEdge(ZxPyNzEdge, marchingEntities, intensityThreshold, meshData);
+                    ProcessEdge(ZxPyNzEdge, marchingEntitiesWithEnvironmentPositions, intensityThreshold, meshData);
                 }
                 if (activatedEdgeFlags.HasFlags(EdgeFlags.ZxPyPz))
                 {
-                    ProcessEdge(ZxPyPzEdge, marchingEntities, intensityThreshold, meshData);
+                    ProcessEdge(ZxPyPzEdge, marchingEntitiesWithEnvironmentPositions, intensityThreshold, meshData);
                 }
                 if (activatedEdgeFlags.HasFlags(EdgeFlags.NxZyNz))
                 {
-                    ProcessEdge(NxZyNzEdge, marchingEntities, intensityThreshold, meshData);
+                    ProcessEdge(NxZyNzEdge, marchingEntitiesWithEnvironmentPositions, intensityThreshold, meshData);
                 }
                 if (activatedEdgeFlags.HasFlags(EdgeFlags.PxZyNz))
                 {
-                    ProcessEdge(PxZyNzEdge, marchingEntities, intensityThreshold, meshData);
+                    ProcessEdge(PxZyNzEdge, marchingEntitiesWithEnvironmentPositions, intensityThreshold, meshData);
                 }
                 if (activatedEdgeFlags.HasFlags(EdgeFlags.NxZyPz))
                 {
-                    ProcessEdge(NxZyPzEdge, marchingEntities, intensityThreshold, meshData);
+                    ProcessEdge(NxZyPzEdge, marchingEntitiesWithEnvironmentPositions, intensityThreshold, meshData);
                 }
                 if (activatedEdgeFlags.HasFlags(EdgeFlags.PxZyPz))
                 {
-                    ProcessEdge(PxZyPzEdge, marchingEntities, intensityThreshold, meshData);
+                    ProcessEdge(PxZyPzEdge, marchingEntitiesWithEnvironmentPositions, intensityThreshold, meshData);
                 }
                 if (activatedEdgeFlags.HasFlags(EdgeFlags.NxNyZz))
                 {
-                    ProcessEdge(NxNyZzEdge, marchingEntities, intensityThreshold, meshData);
+                    ProcessEdge(NxNyZzEdge, marchingEntitiesWithEnvironmentPositions, intensityThreshold, meshData);
                 }
                 if (activatedEdgeFlags.HasFlags(EdgeFlags.NxPyZz))
                 {
-                    ProcessEdge(NxPyZzEdge, marchingEntities, intensityThreshold, meshData);
+                    ProcessEdge(NxPyZzEdge, marchingEntitiesWithEnvironmentPositions, intensityThreshold, meshData);
                 }
                 if (activatedEdgeFlags.HasFlags(EdgeFlags.PxNyZz))
                 {
-                    ProcessEdge(PxNyZzEdge, marchingEntities, intensityThreshold, meshData);
+                    ProcessEdge(PxNyZzEdge, marchingEntitiesWithEnvironmentPositions, intensityThreshold, meshData);
                 }
                 if (activatedEdgeFlags.HasFlags(EdgeFlags.PxPyZz))
                 {
-                    ProcessEdge(PxPyZzEdge, marchingEntities, intensityThreshold, meshData);
+                    ProcessEdge(PxPyZzEdge, marchingEntitiesWithEnvironmentPositions, intensityThreshold, meshData);
                 }
 
                 foreach (var edgeIndex in PointFlagsToEdgeConverter.GetEdgeIndicesFromPointFlags(activatedPointFlags))
@@ -163,14 +163,14 @@ namespace Tyleo.MarchingCubes
                 (PxPyPzPoint.Intensity > intensityThreshold ? PointFlags.PxPyPz : PointFlags.None);
         }
 
-        private void ProcessEdge(MarchingEdge edge, IEnumerable<MarchingEntity> marchingEntities, float intensityThreshold, MeshDataProvider meshData)
+        private void ProcessEdge(MarchingEdge edge, IEnumerable<MarchingEntityEnvironmentPositionPair> marchingEntitiesWithEnvironmentPositions, float intensityThreshold, MeshDataProvider meshData)
         {
             if (edge.LastFrameTouched == LastFrameTouched)
             {
                 return;
             }
 
-            edge.ProcessEdge(LastFrameTouched, marchingEntities, intensityThreshold, meshData);
+            edge.ProcessEdge(LastFrameTouched, marchingEntitiesWithEnvironmentPositions, intensityThreshold, meshData);
         }
 
         public MarchingCube(
