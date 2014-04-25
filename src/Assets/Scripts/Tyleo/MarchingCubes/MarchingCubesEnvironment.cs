@@ -10,7 +10,7 @@ namespace Tyleo.MarchingCubes
         // The number of vertices and triangle indices in the mesh must be predicted because we can
         // only get memory on the graphics card once. Therefore, we want to take a little more than
         // we need. By tweaking the values below we can estimate a little more or less.
-        private const float VERTEX_ESTIMATION_CONSTANT = 5.0f;
+        private const float VERTEX_ESTIMATION_CONSTANT = 1.0f;
         private const float TRIANGLE_ESTIMATION_CONSTANT = 0.5f;
 
         [SerializeField]
