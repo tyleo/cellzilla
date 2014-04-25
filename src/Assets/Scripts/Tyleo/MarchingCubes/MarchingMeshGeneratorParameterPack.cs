@@ -8,11 +8,13 @@ namespace Tyleo.MarchingCubes
     {
         private readonly uint _currentFrameIndex;
         private readonly MarchingCube[, ,] _cubes;
-        private readonly IEnumerable<MarchingEntityEnvironmentPositionPair> _marchingEntitiesWithEnvironmentPositions;
+        private readonly IEnumerable<MarchingEntity> _marchingEntities;
+        private readonly Transform _cubeEnvironmentTransform;
         private readonly float _intensityThreshold;
 
         public uint CurrentFrameIndex { get { return _currentFrameIndex; } }
-        public IEnumerable<MarchingEntityEnvironmentPositionPair> MarchingEntitiesWithEnvironmentPositions { get { return _marchingEntitiesWithEnvironmentPositions; } }
+        public IEnumerable<MarchingEntity> MarchingEntities { get { return _marchingEntities; } }
+        public Transform CubeEnvironmentTransform { get { return _cubeEnvironmentTransform; } }
         public int CubesAlongX { get { return _cubes.GetLength(AxisIndexProvider.XIndex); } }
         public int CubesAlongY { get { return _cubes.GetLength(AxisIndexProvider.YIndex); } }
         public int CubesAlongZ { get { return _cubes.GetLength(AxisIndexProvider.ZIndex); } }
@@ -27,11 +29,8 @@ namespace Tyleo.MarchingCubes
         {
             _currentFrameIndex = currentFrameIndex;
             _cubes = cubes;
-            _marchingEntitiesWithEnvironmentPositions =
-                (
-                    from marchingEntity in marchingEntities
-                    select new MarchingEntityEnvironmentPositionPair(marchingEntity, cubeEnvironmentTransform)
-                ).ToArray();
+            _marchingEntities = marchingEntities;
+            _cubeEnvironmentTransform = cubeEnvironmentTransform;
             _intensityThreshold = intensityThreshold;
         }
     }

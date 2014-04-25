@@ -10,7 +10,8 @@ namespace Tyleo.MarchingCubes
         private readonly MarchingPoint _marchingPoint0;
         private readonly MarchingPoint _marchingPoint1;
         private uint _lastFrameTouched = 0;
-        private Vector3 _edgeVertex = Vector3.zero;
+        private Vector3 _localSpaceCoordinates = Vector3.zero;
+        private Vector3 _worldSpaceCoordinates = Vector3.zero;
         private Vector3 _edgeNormal = Vector3.zero;
         private int _edgeIndex = 0;
 
@@ -18,37 +19,46 @@ namespace Tyleo.MarchingCubes
         public MarchingPoint MarchingPoint1 { get { return _marchingPoint1; } }
 
         public uint LastFrameTouched { get { return _lastFrameTouched; } }
-        public Vector3 EdgeVertex { get { return _edgeVertex; } }
+        public Vector3 LocalSpaceCoordinates { get { return _localSpaceCoordinates; } }
         public Vector3 EdgeNormal { get { return _edgeNormal; } }
         public int VertexIndex { get { return _edgeIndex; } }
 
-        public void ProcessEdge(uint lastFrameTouched, IEnumerable<MarchingEntityEnvironmentPositionPair> marchingEntitiesWithEnvironmentPositions, float intensityThreshold, MeshDataProvider meshData)
+        public void ProcessEdge(uint lastFrameTouched, IEnumerable<MarchingEntity> marchingEntities, float intensityThreshold, MeshDataProvider meshData)
         {
             _lastFrameTouched = lastFrameTouched;
             _edgeIndex = meshData.GetCurrentEdgeIndex();
-            _edgeVertex = GetEdgeVertex(intensityThreshold);
-            _edgeNormal = GetEdgeNormal(marchingEntitiesWithEnvironmentPositions);
+            SetLocalAndWorldSpaceCoordinates(intensityThreshold);
+            _edgeNormal = GetEdgeNormal(marchingEntities);
 
-            meshData.AddVertexAndNormal(_edgeVertex, _edgeNormal);
+            meshData.AddVertexAndNormal(_localSpaceCoordinates, _edgeNormal);
         }
 
-        private Vector3 GetEdgeVertex(float intensityThreshold)
+        private void SetLocalAndWorldSpaceCoordinates(float intensityThreshold)
         {
-            return
+            var interpolant = (intensityThreshold - _marchingPoint0.Intensity) / (_marchingPoint1.Intensity - _marchingPoint0.Intensity);
+
+            _localSpaceCoordinates =
                 Vector3.Lerp(
                     _marchingPoint0.LocalSpaceCoordinates,
                     _marchingPoint1.LocalSpaceCoordinates,
-                    (intensityThreshold - _marchingPoint0.Intensity) / (_marchingPoint1.Intensity - _marchingPoint0.Intensity)
+                    interpolant
+                );
+
+            _worldSpaceCoordinates =
+                Vector3.Lerp(
+                    _marchingPoint0.WorldSpaceCoordinates,
+                    _marchingPoint1.WorldSpaceCoordinates,
+                    interpolant
                 );
         }
 
-        private Vector3 GetEdgeNormal(IEnumerable<MarchingEntityEnvironmentPositionPair> marchingEntitiesWithEnvironmentPositions)
+        private Vector3 GetEdgeNormal(IEnumerable<MarchingEntity> marchingEntities)
         {
             var normal = Vector3.zero;
-            foreach (var marchingEntityWithEnvironmentPosition in marchingEntitiesWithEnvironmentPositions)
+            foreach (var marchingEntity in marchingEntities)
             {
-                var edgeToEntity = marchingEntityWithEnvironmentPosition.EnvironmentSpacePosition - _edgeVertex;
-                normal += edgeToEntity * marchingEntityWithEnvironmentPosition.MarchingEntity.GetIntensity(marchingEntityWithEnvironmentPosition.EnvironmentSpacePosition, _edgeVertex);
+                var edgeToEntity = marchingEntity.transform.position - _worldSpaceCoordinates;
+                normal += edgeToEntity * marchingEntity.GetIntensity(_worldSpaceCoordinates);
             }
             return normal.normalized;
         }

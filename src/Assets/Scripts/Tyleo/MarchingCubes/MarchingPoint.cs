@@ -8,26 +8,29 @@ namespace Tyleo.MarchingCubes
         IEquatable<MarchingPoint>
     {
         private readonly Vector3 _localSpaceCoordinates;
+        private Vector3 _worldSpaceCoordinates = Vector3.zero;
         private uint _lastFrameTouched = 0;
         private float _intensity = 0.0f;
 
         public Vector3 LocalSpaceCoordinates { get { return _localSpaceCoordinates; } }
+        public Vector3 WorldSpaceCoordinates { get { return _worldSpaceCoordinates; } }
         public uint LastFrameTouched { get { return _lastFrameTouched; } }
         public float Intensity { get { return _intensity; } }
 
-        public void Process(uint currentFrameIndex, IEnumerable<MarchingEntityEnvironmentPositionPair> marchingEntitiesWithEnvironmentPositions)
+        public void Process(uint currentFrameIndex, IEnumerable<MarchingEntity> marchingEntities, Transform cubeEnvironmentTransform)
         {
             _lastFrameTouched = currentFrameIndex;
+            _worldSpaceCoordinates = cubeEnvironmentTransform.TransformPoint(_localSpaceCoordinates);
 
-            UpdateIntensity(marchingEntitiesWithEnvironmentPositions);
+            UpdateIntensity(marchingEntities, cubeEnvironmentTransform);
         }
 
-        private void UpdateIntensity(IEnumerable<MarchingEntityEnvironmentPositionPair> marchingEntitiesWithEnvironmentPositions)
+        private void UpdateIntensity(IEnumerable<MarchingEntity> marchingEntities, Transform cubeEnvironmentTransform)
         {
             _intensity = 0.0f;
-            foreach (var marchingEntityWithEnvironmentPosition in marchingEntitiesWithEnvironmentPositions)
+            foreach (var marchingEntity in marchingEntities)
             {
-                _intensity += marchingEntityWithEnvironmentPosition.MarchingEntity.GetIntensity(marchingEntityWithEnvironmentPosition.EnvironmentSpacePosition, _localSpaceCoordinates);
+                _intensity += marchingEntity.GetIntensity(_worldSpaceCoordinates);
             }
         }
 

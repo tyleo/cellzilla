@@ -14,12 +14,14 @@ namespace Tyleo.MarchingCubes
 
         private static void UpdateCubes(MarchingMeshGeneratorParameterPack parameters, MeshDataProvider meshData)
         {
-            foreach (var marchingEntityWithEnvironmentPosition in parameters.MarchingEntitiesWithEnvironmentPositions)
+            foreach (var marchingEntity in parameters.MarchingEntities)
             {
                 // First we convert the center of a marching entity into an index in our cube
                 // lattice.
+                var shiftedUnitIndexVector = parameters.CubeEnvironmentTransform.InverseTransformPoint(marchingEntity.transform.position);
+
                 var unitIndexVector =
-                    marchingEntityWithEnvironmentPosition.EnvironmentSpacePosition +
+                    shiftedUnitIndexVector +
                     new Vector3(
                         +0.5f,
                         +0.5f,
@@ -121,7 +123,7 @@ namespace Tyleo.MarchingCubes
                 return false;
             }
 
-            var result = cube.Process(parameters.CurrentFrameIndex, parameters.MarchingEntitiesWithEnvironmentPositions, parameters.IntensityThreshold, meshData);
+            var result = cube.Process(parameters.CurrentFrameIndex, parameters.MarchingEntities, parameters.CubeEnvironmentTransform, parameters.IntensityThreshold, meshData);
 
             return result;
         }
