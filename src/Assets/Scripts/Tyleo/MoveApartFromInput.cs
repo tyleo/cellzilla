@@ -12,7 +12,7 @@ namespace Tyleo
         [SerializeField]
         private Transform _object1;
 
-        public void Update()
+        private void Update()
         {
             if (Input.GetKey(KeyCode.UpArrow))
             {
@@ -22,10 +22,9 @@ namespace Tyleo
                     object0ToObject1 = new Vector3(0, 1, 0);
                 }
                 Vector3 object0ToObject1Normalized = object0ToObject1.normalized;
-                Vector3 object0ToObject1HalfNormalized = object0ToObject1Normalized / 2;
-                Vector3 object0ToObject1HalfNormalizedByTime = object0ToObject1HalfNormalized * _unitsPerSecond * Time.deltaTime;
+                Vector3 object0ToObject1NormalizedByTime = object0ToObject1Normalized * _unitsPerSecond * Time.deltaTime;
 
-                Vector3 object1Movement = object0ToObject1HalfNormalizedByTime;
+                Vector3 object1Movement = object0ToObject1NormalizedByTime;
                 Vector3 object0Movement = -object1Movement;
 
                 _object0.position += object0Movement;
@@ -39,10 +38,9 @@ namespace Tyleo
                     object0ToObject1 = new Vector3(0, 1, 0);
                 }
                 Vector3 object0ToObject1Normalized = object0ToObject1.normalized;
-                Vector3 object0ToObject1HalfNormalized = object0ToObject1Normalized / 2;
-                Vector3 object0ToObject1HalfNormalizedByTime = object0ToObject1HalfNormalized * _unitsPerSecond * Time.deltaTime;
+                Vector3 object0ToObject1NormalizedByTime = object0ToObject1Normalized * _unitsPerSecond * Time.deltaTime;
 
-                Vector3 object1Movement = object0ToObject1HalfNormalizedByTime;
+                Vector3 object1Movement = object0ToObject1NormalizedByTime;
                 Vector3 object0Movement = -object1Movement;
 
                 _object0.position -= object0Movement;

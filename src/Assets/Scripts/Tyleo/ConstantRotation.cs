@@ -10,7 +10,7 @@ namespace Tyleo
         [SerializeField]
         private Vector3 _rotationAxis = new Vector3(1, 0, 0);
 
-        public void Update()
+        private void Update()
         {
             transform.Rotate(_rotationAxis, _degreesPerSecond * Time.deltaTime);
         }

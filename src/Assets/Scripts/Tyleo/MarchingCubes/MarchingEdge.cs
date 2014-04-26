@@ -57,7 +57,7 @@ namespace Tyleo.MarchingCubes
             var normal = Vector3.zero;
             foreach (var marchingEntity in marchingEntities)
             {
-                var edgeToEntity = marchingEntity.transform.position - _worldSpaceCoordinates;
+                var edgeToEntity = marchingEntity.EnvironmentSpaceCoordinates - _localSpaceCoordinates;
                 normal += edgeToEntity * marchingEntity.GetIntensity(_worldSpaceCoordinates);
             }
             return normal.normalized;

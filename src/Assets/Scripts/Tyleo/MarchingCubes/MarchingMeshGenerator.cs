@@ -18,10 +18,10 @@ namespace Tyleo.MarchingCubes
             {
                 // First we convert the center of a marching entity into an index in our cube
                 // lattice.
-                var shiftedUnitIndexVector = parameters.CubeEnvironmentTransform.InverseTransformPoint(marchingEntity.transform.position);
+                marchingEntity.SetEnvironmentSpaceCoordinates(parameters.CubeEnvironmentTransform);
 
                 var unitIndexVector =
-                    shiftedUnitIndexVector +
+                    marchingEntity.EnvironmentSpaceCoordinates +
                     new Vector3(
                         +0.5f,
                         +0.5f,

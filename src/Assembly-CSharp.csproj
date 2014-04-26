@@ -67,6 +67,7 @@
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\PointIndex.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MarchingCubes\UVCreator.cs" />
      <Compile Include="Assets\Scripts\Tyleo\MoveApartFromInput.cs" />
+     <Compile Include="Assets\Scripts\Tyleo\MoveApartOverTime.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
