@@ -6,9 +6,9 @@ namespace Tyleo
         MonoBehaviour
     {
         [SerializeField]
-        private float _period;
+        private float _period = 60.0f;
         [SerializeField]
-        private float _maxDisplacementMagnitude;
+        private float _maxDisplacementMagnitude = 0.65f;
         [SerializeField]
         private Transform _object0;
         [SerializeField]

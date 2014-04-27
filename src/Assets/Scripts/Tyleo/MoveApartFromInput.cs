@@ -6,7 +6,9 @@ namespace Tyleo
         MonoBehaviour
     {
         [SerializeField]
-        private float _unitsPerSecond = 1.0f;
+        private float _unitsPerSecond = 0.01f;
+        [SerializeField]
+        private float _maxDisplacement = 0.5f;
         [SerializeField]
         private Transform _object0;
         [SerializeField]
@@ -16,10 +18,14 @@ namespace Tyleo
         {
             if (Input.GetKey(KeyCode.UpArrow))
             {
-                Vector3 object0ToObject1 = _object1.position - _object0.position;
+                Vector3 object0ToObject1 = _object1.localPosition - _object0.localPosition;
                 if (object0ToObject1.Equals(Vector3.zero))
                 {
                     object0ToObject1 = new Vector3(0, 1, 0);
+                }
+                else if (object0ToObject1.magnitude >= _maxDisplacement)
+                {
+                    return;
                 }
                 Vector3 object0ToObject1Normalized = object0ToObject1.normalized;
                 Vector3 object0ToObject1NormalizedByTime = object0ToObject1Normalized * _unitsPerSecond * Time.deltaTime;
@@ -27,12 +33,12 @@ namespace Tyleo
                 Vector3 object1Movement = object0ToObject1NormalizedByTime;
                 Vector3 object0Movement = -object1Movement;
 
-                _object0.position += object0Movement;
-                _object1.position += object1Movement;
+                _object0.localPosition += object0Movement;
+                _object1.localPosition += object1Movement;
             }
             else if (Input.GetKey(KeyCode.DownArrow))
             {
-                Vector3 object0ToObject1 = _object1.position - _object0.position;
+                Vector3 object0ToObject1 = _object1.localPosition - _object0.localPosition;
                 if (object0ToObject1.Equals(Vector3.zero))
                 {
                     object0ToObject1 = new Vector3(0, 1, 0);
@@ -43,8 +49,8 @@ namespace Tyleo
                 Vector3 object1Movement = object0ToObject1NormalizedByTime;
                 Vector3 object0Movement = -object1Movement;
 
-                _object0.position -= object0Movement;
-                _object1.position -= object1Movement;
+                _object0.localPosition -= object0Movement;
+                _object1.localPosition -= object1Movement;
             }
         }
     }
