@@ -76,7 +76,7 @@
                 A marching entity which generates intensities using the following equation:
             </div>
             <br/>
-            <div align="center"><img src="Equation 1.png" /></div>
+            <div align="center"><img src="Equation 1.png" width="623em" height="76em" /></div>
             <br/>
             <div class="paragraph">
                 The square magnitude was used so that a square root did not have to be taken for every point. This computation would have been prohibitively expensive. Additionally, the elimination of the floating point division would also have provided a much more computationally efficient equation.
@@ -86,113 +86,182 @@
             <div class="paragraph">
                 A cube within the environment with local space coordinates between -0.5 and +0.5 in each direction (X, Y, Z). It consists of 8 points and 12 edges.
             </div>
-
-            <!-- This is where our hero left off.-->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            <br/>
+            <div class="heading3">2.1.5 - MarchingEdge</div>
             <div class="paragraph">
-                By using the marching cubes algorithm to create metaballs and then applying a shader which supports transparency to the metaball, a simulation of a 3D cell with organelles should be feasible. The resulting should look similar to Figure 1, below.
+                An edge within the environment. It consists of 2 points.
             </div>
-            </br>
+            <br/>
+            <div class="heading3">2.1.6 - MarchingPoint</div>
+            <div class="paragraph">
+                A point within the environment.
+            </div>
+            <br/>
+            <div class="heading3">2.1.7 - EdgeIndex</div>
+            <div class="paragraph">
+                The 0-11 index of an edge in a marching cube.
+            </div>
+            <br/>
+            <div class="heading3">2.1.8 - PointIndex</div>
+            <div class="paragraph">
+                The 0-7 index of a point in a marching cube.
+            </div>
+            <br/>
+            <div class="heading3">2.1.9 - EdgeFlags</div>
+            <div class="paragraph">
+                Flags indicating which edges will contain a vertex if the cube were drawn.
+            </div>
+            <br/>
+            <div class="heading3">2.1.10 - PointFlags</div>
+            <div class="paragraph">
+                Flags indicating which points have an intensity above the threshold. These flags are all adjacent numbers within the range 0-255 so they can be used to index an array.
+            </div>
+            <br/>
+            <div class="heading3">2.1.11 - PointFlagsToEdgeConverter</div>
+            <div class="paragraph">
+                Converts point flags to edge flags or to a list of edge indices using tables generated from a utility.
+            </div>
+            <br/>
+            <div class="heading2">2.2 - Computation</div>
+            <div class="paragraph">
+                The following procedure describes this particular implementation of the algorithm:
+            </div>
+            <br/>
+            <ol>
+                <li>Get the set of entities which we wish to create a mesh for.</li>
+                <li>Remove one entity from the set and determine where its centroid is located in the local-space of the marching cubes environment.</li>
+                <li>Convert the local-space coordinates to an index into the cube-lattice. Clamp the coordinates if the entity is outside of the bounds.</li>
+                <li>Search all cubes starting from our index along the Z-axis towards the closest edge of the environment applying intensities to their points as we go, stop when we find a cube at the surface of the mesh, the edge of the environment, or a cube that has already been searched.</li>
+                <li>If we found a new cube at the surface of the mesh search all of the neighboring cubes and repeat this step.</li>
+            </ol>
+            <div class="paragraph">
+                The following procedure describes how a cube is searched:
+            </div>
+            <br/>
+            <ol>
+                <li>Calculate the intensity at each point in the cube.</li>
+                <li>Obtain a set of point flags indicating which points are on.</li>
+                <li>Obtain a set of edge flags from the point flags using the point flags to edge converter.</li>
+                <li>Interpolate new points along each of these edges using their constituent points and the point intensities and assign an index to each edge. Essentially linearly interpolate the two points and use the result of the following equation as the interpolant:</li>
+                <br/>
+                <div align="center"><img src="Equation 2.png" width="575em" height="69em" /></div>
+                <br/>
+                <li>Add the new interpolated points to a list of vertexes we will draw.</li>
+                <li>Calculate the normal of each of the edges we just added using the following equation:</li>
+                <br/>
+                <div align="center"><img src="Equation 3.png" width="575em" height="167em" /></div>
+                <br/>
+                <li>Add the new normal to a list of the normal of each vertex we will draw. They should be added in the same order that the vertices were added in.</li>
+                <li>Obtain a set of indices from the point flags indicating the edges of the cube which will be used as triangles. Index the cube for these edges and add their indices to a list of triangle indices.</li>
+            </ol>
+            <div class="paragraph">
+                After all of the cubes are searched and the lists of vertices, normal and triangle indices are built the new mesh can be generated.
+            </div>
+            <br/>
+            <div class="heading2">2.3 - Results</div>
+            <div class="heading3">2.3.1 - Overall Simulation</div>
+            <div class="paragraph">
+                For the overall simulation 11 marching cubes environments were created and 8 metaballs were added to each environment. Each environment contained 15 cubes in each direction totaling 3,375 cells each or 37,125 total cells. The meshes of each environment were textured with a transparent texture and shaded with a transparent diffuse shader. The metaballs were clustered in groups of two within their environment so that they could be easily controlled. Two sets of the metaballs could be controlled using the up and down arrow keys on a standard keyboard: the up key would bring the balls apart and the down key would bring them together. The rest of the balls were controlled automatically using scripts. A skybox, light, music and particle effects were also provided for atmosphere. The simulation ran with an average framerate around 30 FPS on a test laptop. Figure 1, below, provides an example of what the scene looked like.
+            </div>
+            <br/>
             <table align="center">
                 <tr>
                     <td align="center">
-                        <img src="Figure 1.jpg" alt="Default Shaded Metaballs Representing Cell">
+                        <img src="Figure 1.png" width="300em" height="300em">
                     </td>
                 </tr>
                 <tr>
                     <td align="center">
-                        <b class="normalText">Figure 1: Default Shaded Metaballs Representing Cell <a href="http://wiki.unity3d.com/index.php?title=MetaBalls">[3]</a></b>
+                        <div class="normalText">
+                            <b>Figure 1</b>: Overall Simulation
+                        </div>
                     </td>
                 </tr>
             </table>
-            </br>
+            <br/>
             <div class="paragraph">
-                Additionally by providing a red background, we can make the scene appear as though it is taking place within a human blood vessel. The background may be similar to Figure 2, below.
+                Figure 2, below provides an example of the vertices used to create the central cell.
             </div>
-            </br>
+            <br/>
             <table align="center">
                 <tr>
                     <td align="center">
-                        <img src="Figure 2.jpg" alt="Blood Vessel Background">
+                        <img src="Figure 2.png" width="300em" height="300em">
                     </td>
                 </tr>
                 <tr>
                     <td align="center">
-                        <b class="normalText">Figure 2: Blood Vessel Background <a href="http://www.wallsave.com/wallpaper/2560x1024/domo-cell-blood-cells-biconcave-plasma-vessel-103247.html">[4]</a></b>
+                        <div class="normalText">
+                            <b>Figure 2</b>: Overall Central Cell Mesh
+                        </div>
                     </td>
                 </tr>
             </table>
-            </br>
+            <br/>
+            <div class="heading3">2.3.2 - Single Cell</div>
             <div class="paragraph">
-                By creating additional metaballs or additional meshes and applying appropriate shaders and textures, organelles can be created to fill the cell. A 2D image, similar to the 3D cell we wish to present in 3D is provided in Figure 3, below.
+                For the single-cell simulation 1 marching cubes environments was created and 8 metaballs were added to the environment. The environment contained 60 cubes in each direction totaling 216,000 cells. The meshes of the environment were textured with a transparent texture and shaded with a transparent diffuse shader. The metaballs were clustered in two group within the environment so that they could be easily controlled. The two sets of the metaballs could be controlled using the up and down arrow keys on a standard keyboard: the up key would bring the balls apart and the down key would bring them together. A skybox, light, music and particle effects were also provided for atmosphere. The simulation ran with an average framerate around 30 FPS on a test laptop. Figure 3, below, provides an example of what the scene looked like.
             </div>
-            </br>
+            <br/>
             <table align="center">
                 <tr>
                     <td align="center">
-                        <img src="Figure 3.jpg" alt="2D Cell with Organelles">
+                        <img src="Figure 3.png" width="300em" height="300em">
                     </td>
                 </tr>
                 <tr>
                     <td align="center">
-                        <b class="normalText">Figure 3: 2D Cell with Organelles <a href="http://biology.clc.uc.edu/courses/bio104/cells.htm">[5]</a></b>
+                        <div class="normalText">
+                            <b>Figure 3</b>: Single Cell Simulation
+                        </div>
                     </td>
                 </tr>
             </table>
-            </br>
+            <br/>
             <div class="paragraph">
-                The resulting scene will ultimately include the 3D cell with organelles and transparent textures against a red background representing a blood vessel.
+                Figure 4, below provides an example of the vertices used to create the cell.
             </div>
-            </br>
-            <div class="heading1">Project Timeline</div>
-            </br>
-            <div class="normalText">2014-04-04: Project proposal submitted.</div>
-            <div class="normalText">2014-04-06: Shaders, textures and static models required for cell model completed.</div>
-            <div class="normalText">2014-04-12: Metaball algorithm fully implemented.</div>
-            <div class="normalText">2014-04-14: Cell model completed with interaction logic.</div>
-            <div class="normalText">2014-04-16: Project presentation.</div>
-            <div class="normalText">2014-04-28: Project submission.</div>
-            </br>
-            <div class="heading1">Responsibilities</div>
-            </br>
-            <b class="normalText">Lisa:</b>
+            <br/>
+            <table align="center">
+                <tr>
+                    <td align="center">
+                        <img src="Figure 4.png" width="300em" height="300em">
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center">
+                        <div class="normalText">
+                            <b>Figure 4</b>: Single Cell Mesh
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <br/>
+            <div class="heading1">3 - References</div>
             <div class="paragraph">
-                Lisa will be responsible for modifications to the main algorithm to improve performance and aesthetics. Additionally she will implement the core of the interaction logic. She will also be responsible for finding or creating all of the textures used wihtin the simulation.
+                [1] <a href="http://en.wikipedia.org/wiki/Marching_cubes">http://en.wikipedia.org/wiki/Marching_cubes</a>
             </div>
-            </br>
-            <b class="normalText">Tyler:</b>
             <div class="paragraph">
-                Tyler will be responsible for writing the main algorithm and modifications to the project website. When the interaction logic is complete Tyler will make sure it is working correctly. He will also be responsible for finding or creating all of the models used within the simulation.
+                [2] <a href="http://en.wikipedia.org/wiki/Metaballs">http://en.wikipedia.org/wiki/Metaballs</a>
             </div>
-            </br>
-            <div class="heading1">References</div>
-            </br>
-            <div class="normalText">[1] <a href="http://en.wikipedia.org/wiki/Marching_cubes">http://en.wikipedia.org/wiki/Marching_cubes</a></div>
-            <div class="normalText">[2] <a href="http://en.wikipedia.org/wiki/Metaballs">http://en.wikipedia.org/wiki/Metaballs</a></div>
-            <div class="normalText">[3] <a href="http://wiki.unity3d.com/index.php?title=MetaBalls">http://wiki.unity3d.com/index.php?title=MetaBalls</a></div>
-            <div class="normalText">[4] <a href="http://www.wallsave.com/wallpaper/2560x1024/domo-cell-blood-cells-biconcave-plasma-vessel-103247.html">http://www.wallsave.com/wallpaper/2560x1024/domo-cell-blood-cells-biconcave-plasma-vessel-103247.html</a></div>
-            <div class="normalText">[5] <a href="http://biology.clc.uc.edu/courses/bio104/cells.htm">http://biology.clc.uc.edu/courses/bio104/cells.htm</a></div>
+            <div class="paragraph">
+                [3] <a href="http://wiki.unity3d.com/index.php?title=MetaBalls">http://wiki.unity3d.com/index.php?title=MetaBalls</a>
+            </div>
+            <br/>
+            <div class="heading1">4 - Additional Resources</div>
+            <div class="paragraph">
+                The source code described within this document is available at <a href="https://github.com/Tyleo/cellzilla">https://github.com/Tyleo/cellzilla</a>.
+            </div>
+            <br/>
+            <div class="paragraph">
+                The application described within this document can be run using Unity Web Player at <a href="http://tyleo.github.io/cellzilla/app/cellzilla-single.html">http://tyleo.github.io/cellzilla/app/cellzilla-single.html</a>. This simulation demonstrates a single cell with 60 cubes along each row.
+            </div>
+            <br/>
+            <div class="paragraph">
+                A video of the application running is available at <a href="http://tyleo.github.io/cellzilla/video/video.html">http://tyleo.github.io/cellzilla/video/video.html</a>
+            </div>
+            <br/>
+            <br/>
         </div>
     </body>
 </html>
