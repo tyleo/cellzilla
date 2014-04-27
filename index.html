@@ -12,150 +12,84 @@
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-        <link rel="stylesheet" href="presentation/css/reveal.min.css">
-        <link rel="stylesheet" href="presentation/css/theme/default.css" id="theme">
-
-        <!-- For syntax highlighting -->
-        <link rel="stylesheet" href="presentation/lib/css/zenburn.css">
-
-        <!-- If the query includes 'print-pdf', include the PDF print sheet -->
-        <script>
-            if( window.location.search.match( /print-pdf/gi ) ) {
-                var link = document.createElement( 'link' );
-                link.rel = 'stylesheet';
-                link.type = 'text/css';
-                link.href = 'presentation/css/print/pdf.css';
-                document.getElementsByTagName( 'head' )[0].appendChild( link );
-            }
-        </script>
         <style type="text/css">
+            body {
+                font-family: Arial;
+            }
+            h1 {
+                font-size: 4em;
+            }
+            h2 {
+                font-size: 2em;
+            }
+            img {
+                margin: 1.25em;
+            }
             .centered {
                 margin: 0 auto;
+                width: 75em;
             }
         </style>
-        <!--[if lt IE 9]>
-        <script src="lib/js/html5shiv.js"></script>
-        <![endif]-->
     </head>
 
     <body>
-
-        <div class="reveal">
-            <!-- Any section element inside of this container is displayed as a slide -->
-            <div class="slides" data-transition="linear">
-                <section>
-                    <h1>cellzilla</h1>
-                    <p>
-                        <small>Lisa Lau | Tyler Wolf Leonhardt</small>
-                    </p>
-                    <p>
-                        <small>http://tyleo.github.io/cellzilla</small>
-                    </p>
-                </section>
-                <section>
-                    <h2>
-                        Meet Cellzilla
-                    </h2>
-                    <h3>
-                        He lives in the Unity ecosystem
-                    </h3>
-                    <img src="presentation/assets/cellzilla.png" height="512" width="512" />
-                </section>
-                <section>
-                    <h2>
-                        Cellzilla can break apart
-                    </h2>
-                    <img src="presentation/assets/break-apart.png" height="512" width="512" />
-                </section>
-                <section>
-                    <h2>
-                        And be put back together
-                    </h2>
-                    <img src="presentation/assets/put-together.png" height="512" width="512" />
-                </section>
-                <section>
-                    <h2>
-                        How did we make cellzilla?
-                    </h2>
-                </section>
-                <section>
-                    <section>
-                        <h2>
-                            Cellzilla is made out of spheres
+        <div class="centered">
+            <h1 align="center" style="margin-bottom: 0em;">
+                cellzilla
+            </h1>
+            <table align="center">
+                <tr>
+                    <td align="center">
+                        <a href="proposal/proposal.html">
+                            <img src="index/proposal.png" width="256em" height="256em" align="bottom" />
+                        </a>
+                        <h2 style="margin-top: 0em;">
+                            proposal
                         </h2>
-                        <img src="presentation/assets/sphere.png" height="512" width="512"/>
-                    </section>
-                    <section>
-                        <h2>
-                            NO!
+                    </td>
+                    <td align="center">
+                        <a href="app/cellzilla-single.html">
+                            <img src="index/app.png" width="256em" height="256em" align="bottom" />
+                        </a>
+                        <h2 style="margin-top: 0em;">
+                            application
                         </h2>
-                    </section>
-                    <section>
-                        <h3>
-                            Who wants to make things out of spheres?
-                        </h3>
-                    </section>
-                </section>
-                <section>
-                    <h3>
-                        Cellzilla was actually born from the marching cubes algorithm
-                    </h3>
-                    <img src="presentation/assets/marching-cubes.png" height="512" width="512" />
-                </section>
-                <section>
-                    <h3>
-                        This algorithm works by filling a volume with cubes
-                    </h3>
-                    <img src="presentation/assets/cube-fill.png" height="512" width="512" />
-                </section>
-                <section>
-                    <h3>
-                        And then generating a mesh from the surface
-                    </h3>
-                    <img src="presentation/assets/mesh-triangles.png" height="236" width="501" />
-                </section>
-                <section data-background="presentation/assets/cellzilla-large.png">
-                    <h2>
-                        We hope you love cellzilla
-                    </h2>
-                </section>
-            </div>
+                    </td>
+                    <td align="center">
+                        <a href="presentation/presentation.html">
+                            <img src="index/presentation.png" width="256em" height="256em" align="bottom" />
+                        </a>
+                        <h2 style="margin-top: 0em;">
+                            presentation
+                        </h2>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center">
+                        <a href="">
+                            <img src="index/report.png" width="256em" height="256em" align="bottom" />
+                        </a>
+                        <h2 style="margin-top: 0em;">
+                            report
+                        </h2>
+                    </td>
+                    <td align="center">
+                        <a href="https://github.com/Tyleo/cellzilla">
+                            <img src="index/code.png" width="256em" height="256em" align="bottom" />
+                        </a>
+                        <h2 style="margin-top: 0em;">
+                            code
+                        </h2>
+                    </td>
+                    <td align="center">
+                        <a href="video/video.html">
+                            <img src="index/video.png" width="256em" height="256em" align="bottom" />
+                        </a>
+                        <h2 style="margin-top: 0em;">
+                            video
+                        </h2>
+                    </td>
+            </table>
         </div>
-
-        <script src="presentation/lib/js/head.min.js"></script>
-        <script src="presentation/js/reveal.min.js"></script>
-
-        <script>
-
-            // Full list of configuration options available here:
-            // https://github.com/hakimel/reveal.js#configuration
-            Reveal.initialize({
-                controls: true,
-                progress: true,
-                history: true,
-                center: true,
-
-                theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
-                transition: 'linear',//Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
-
-                // Parallax scrolling
-                // parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
-                // parallaxBackgroundSize: '2100px 900px',
-
-                // Optional libraries used to extend on reveal.js
-                dependencies: [
-                    { src: 'presentation/lib/js/classList.js', condition: function() { return !document.body.classList; } },
-                    { src: 'presentation/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-                    { src: 'presentation/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-                    { src: 'presentation/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-                    { src: 'presentation/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
-                    { src: 'presentation/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
-                ]
-            });
-
-        </script>
-
     </body>
 </html>

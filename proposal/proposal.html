@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+
+        <title>Cell Simulations with the Marching Cubes Algorithm</title>
+
+        <meta name="description" content="Describes a method for simulating cells for a final class project.">
+        <meta name="author" content="Lisa Lau and Tyler Wolf Leonhardt">
+
+        <style type="text/css">
+            body {
+                font-family: Arial;
+            }
+            .heading1 {
+                font-size: 19pt;
+                color: rgb(46, 116, 181);
+            }
+            .heading2 {
+                font-size: 16pt;
+                color: rgb(46, 116, 181);
+            }
+            .paragraph {
+                text-indent: 3em;
+                font-size: 13pt;
+            }
+            .normalText {
+                font-size: 13pt;
+            }
+            .centered {
+                width: 50em;
+                margin: 0 auto;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="centered">
+            <div class="heading1">Cell Simulations with the Marching Cubes Algorithm</div>
+            <div class="heading2">By Lisa Lau and Tyler Wolf Leonhardt</div>
+            </br>
+            <div class="paragraph">
+                The marching cubes algorithm is an algorithm which allows a mesh to be created from a scalar field <a href="http://en.wikipedia.org/wiki/Marching_cubes">[1]</a>. In other words, the algorithm takes a 3-dimensional array of filled and unfilled cubes and creates polygons which represent the volume of the filled cubes. The marching cubes algorithm can be used to create some 3D models known as metaballs. Metaballs are spherical objects which modify the geometry of other metaballs, sometimes even to the point of fusing, when they are close to each other <a href="http://en.wikipedia.org/wiki/Metaballs">[2]</a>.
+            </div>
+            <div class="paragraph">
+                By using the marching cubes algorithm to create metaballs and then applying a shader which supports transparency to the metaball, a simulation of a 3D cell with organelles should be feasible. The resulting should look similar to Figure 1, below.
+            </div>
+            </br>
+            <table align="center">
+                <tr>
+                    <td align="center">
+                        <img src="Figure 1.jpg" alt="Default Shaded Metaballs Representing Cell">
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center">
+                        <b class="normalText">Figure 1: Default Shaded Metaballs Representing Cell <a href="http://wiki.unity3d.com/index.php?title=MetaBalls">[3]</a></b>
+                    </td>
+                </tr>
+            </table>
+            </br>
+            <div class="paragraph">
+                Additionally by providing a red background, we can make the scene appear as though it is taking place within a human blood vessel. The background may be similar to Figure 2, below.
+            </div>
+            </br>
+            <table align="center">
+                <tr>
+                    <td align="center">
+                        <img src="Figure 2.jpg" alt="Blood Vessel Background">
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center">
+                        <b class="normalText">Figure 2: Blood Vessel Background <a href="http://www.wallsave.com/wallpaper/2560x1024/domo-cell-blood-cells-biconcave-plasma-vessel-103247.html">[4]</a></b>
+                    </td>
+                </tr>
+            </table>
+            </br>
+            <div class="paragraph">
+                By creating additional metaballs or additional meshes and applying appropriate shaders and textures, organelles can be created to fill the cell. A 2D image, similar to the 3D cell we wish to present in 3D is provided in Figure 3, below.
+            </div>
+            </br>
+            <table align="center">
+                <tr>
+                    <td align="center">
+                        <img src="Figure 3.jpg" alt="2D Cell with Organelles">
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center">
+                        <b class="normalText">Figure 3: 2D Cell with Organelles <a href="http://biology.clc.uc.edu/courses/bio104/cells.htm">[5]</a></b>
+                    </td>
+                </tr>
+            </table>
+            </br>
+            <div class="paragraph">
+                The resulting scene will ultimately include the 3D cell with organelles and transparent textures against a red background representing a blood vessel.
+            </div>
+            </br>
+            <div class="heading1">Project Timeline</div>
+            </br>
+            <div class="normalText">2014-04-04: Project proposal submitted.</div>
+            <div class="normalText">2014-04-06: Shaders, textures and static models required for cell model completed.</div>
+            <div class="normalText">2014-04-12: Metaball algorithm fully implemented.</div>
+            <div class="normalText">2014-04-14: Cell model completed with interaction logic.</div>
+            <div class="normalText">2014-04-16: Project presentation.</div>
+            <div class="normalText">2014-04-28: Project submission.</div>
+            </br>
+            <div class="heading1">Responsibilities</div>
+            </br>
+            <b class="normalText">Lisa:</b>
+            <div class="paragraph">
+                Lisa will be responsible for modifications to the main algorithm to improve performance and aesthetics. Additionally she will implement the core of the interaction logic. She will also be responsible for finding or creating all of the textures used wihtin the simulation.
+            </div>
+            </br>
+            <b class="normalText">Tyler:</b>
+            <div class="paragraph">
+                Tyler will be responsible for writing the main algorithm and modifications to the project website. When the interaction logic is complete Tyler will make sure it is working correctly. He will also be responsible for finding or creating all of the models used within the simulation.
+            </div>
+            </br>
+            <div class="heading1">References</div>
+            </br>
+            <div class="normalText">[1] <a href="http://en.wikipedia.org/wiki/Marching_cubes">http://en.wikipedia.org/wiki/Marching_cubes</a></div>
+            <div class="normalText">[2] <a href="http://en.wikipedia.org/wiki/Metaballs">http://en.wikipedia.org/wiki/Metaballs</a></div>
+            <div class="normalText">[3] <a href="http://wiki.unity3d.com/index.php?title=MetaBalls">http://wiki.unity3d.com/index.php?title=MetaBalls</a></div>
+            <div class="normalText">[4] <a href="http://www.wallsave.com/wallpaper/2560x1024/domo-cell-blood-cells-biconcave-plasma-vessel-103247.html">http://www.wallsave.com/wallpaper/2560x1024/domo-cell-blood-cells-biconcave-plasma-vessel-103247.html</a></div>
+            <div class="normalText">[5] <a href="http://biology.clc.uc.edu/courses/bio104/cells.htm">http://biology.clc.uc.edu/courses/bio104/cells.htm</a></div>
+        </div>
+    </body>
+</html>
