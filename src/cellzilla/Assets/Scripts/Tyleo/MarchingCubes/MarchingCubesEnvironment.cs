@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace Tyleo.MarchingCubes
 {
+    /// <summary>
+    /// An environment in which a mesh can be generated from the marching cubes algorithm.
+    /// </summary>
     public sealed class MarchingCubesEnvironment :
         MonoBehaviour
     {
@@ -13,18 +16,42 @@ namespace Tyleo.MarchingCubes
         private const float VERTEX_ESTIMATION_CONSTANT = 1.0f;
         private const float TRIANGLE_ESTIMATION_CONSTANT = 0.5f;
 
+        /// <summary>
+        /// The maximum number of vertices the generated mesh can have. Use -1 if you want the
+        /// algorithm to estimate this value.
+        /// </summary>
         [SerializeField]
         private int _predictedNumberOfVertices = -1;
+        /// <summary>
+        /// The maximum number of triangle indices the generated mesh can have. Use -1 if you want
+        /// the algorithm to estimate this value.
+        /// </summary>
         [SerializeField]
         private int _predictedNumberOfTriangleIndices = -1;
+        /// <summary>
+        /// The number of MarchingCubes along the X-axis.
+        /// </summary>
         [SerializeField]
         private int _cubesAlongX = 40;
+        /// <summary>
+        /// The number of MarchingCubes along the Y-axis.
+        /// </summary>
         [SerializeField]
         private int _cubesAlongY = 40;
+        /// <summary>
+        /// The number of MarchingCubes along the Z-axis.
+        /// </summary>
         [SerializeField]
         private int _cubesAlongZ = 40;
+        /// <summary>
+        /// The threshold value which determines where the surface of the mesh will be generated.
+        /// Vertices below the threshold will be considered within the mesh, points above, outside.
+        /// </summary>
         [SerializeField]
         private float _threshold = 2.5f;
+        /// <summary>
+        /// The marching entities which participate in determining the geometry of the mesh.
+        /// </summary>
         [SerializeField]
         private List<MarchingEntity> _marchingEntities = new List<MarchingEntity>();
 
@@ -35,8 +62,14 @@ namespace Tyleo.MarchingCubes
 
         private uint _frameCount = 0;
 
+        /// <summary>
+        /// Runs a single iteration of the marching cubes algorithm. Generates the mesh for this
+        /// frame.
+        /// </summary>
         private void Update()
         {
+            // The frame count should roll over when it passes its max value. Thats why this
+            // increment is unchecked.
             unchecked { _frameCount++; }
 
             var marchingMeshGeneratorParameterPack =
@@ -58,9 +91,7 @@ namespace Tyleo.MarchingCubes
 
         private void Start()
         {
-            _mesh = new Mesh()
-            {
-            };
+            _mesh = new Mesh();
             _mesh.MarkDynamic();
             GetComponent<MeshFilter>().mesh = _mesh;
 
@@ -68,6 +99,9 @@ namespace Tyleo.MarchingCubes
 
             _cubes = CubeLatticeGenerator.CreateCubes(_cubesAlongX, _cubesAlongY, _cubesAlongZ);
 
+            // The equations below estimate the number of vertices and triangle indices if no
+            // prediction was provided by the user. These estimations are not very good and an
+            // underestimate will cripple performance.
             if (_predictedNumberOfVertices == -1)
             {
                 _predictedNumberOfVertices = (int)(_cubesAlongX * _cubesAlongY * _cubesAlongZ / VERTEX_ESTIMATION_CONSTANT);

@@ -1,5 +1,9 @@
 ﻿namespace Tyleo.MarchingCubes
 {
+    /// <summary>
+    /// Provides a conversion from edge names to integers so that they may be indexed from an array
+    /// in a marching cube. This provides an increase in speed over a switch-case.
+    /// </summary>
     public enum EdgeIndex :
         byte
     {

@@ -2,12 +2,29 @@
 
 namespace Tyleo.MarchingCubes
 {
+    /// <summary>
+    /// Provides methods for generating a mesh at a single frame using the marching cubes algorithm.
+    /// </summary>
     public static class MarchingMeshGenerator
     {
+        /// <summary>
+        /// Generates a mesh at a single frame using the marching cubes algorithm.
+        /// </summary>
+        /// <param name="parameters">
+        /// A collection of parameters used for generating the mesh data.
+        /// </param>
+        /// <param name="predictedNumberOfVertices">
+        /// The maximum number of vertices the generated mesh can have.
+        /// </param>
+        /// <param name="predictedNumberOfTriangleIndices">
+        /// The maximum number of triangle indices the generated mesh can have.
+        /// </param>
+        /// <returns>
+        /// Data which can be easily used to construct a mesh.
+        /// </returns>
         public static MeshDataProvider GenerateMeshData(MarchingMeshGeneratorParameterPack parameters, int predictedNumberOfVertices, int predictedNumberOfTriangleIndices)
         {
             var result = new MeshDataProvider(predictedNumberOfVertices, predictedNumberOfTriangleIndices);
-
             UpdateCubes(parameters, result);
             return result;
         }
@@ -16,7 +33,7 @@ namespace Tyleo.MarchingCubes
         {
             foreach (var marchingEntity in parameters.MarchingEntities)
             {
-                // First we convert the center of a marching entity into an index in our cube
+                // First we convert the center of the marching entity into an index in our cube
                 // lattice.
                 marchingEntity.SetEnvironmentSpaceCoordinates(parameters.CubeEnvironmentTransform);
 
@@ -46,8 +63,8 @@ namespace Tyleo.MarchingCubes
                 if (UpdateCubesLinearly(parameters, meshData, i, j, ref k))
                 {
                     // If a mesh is around the entity, we check all of the cubes next to the one we
-                    // found on the surface of the mesh.
-
+                    // found on the surface of the mesh. Surface cubes should be by other surface
+                    // cubes.
                     UpdateCubesRecursively(parameters, meshData, i, j, k);
                 }
             }
@@ -60,6 +77,7 @@ namespace Tyleo.MarchingCubes
             // false.
             if (k > parameters.CubesAlongZ / 2)
             {
+                // This looks in the positive Z direction.
                 while (k < parameters.CubesAlongZ && !ProcessCube(parameters, meshData, i, j, k))
                 {
                     ++k;
@@ -69,6 +87,7 @@ namespace Tyleo.MarchingCubes
             }
             else
             {
+                // this looks in the negative Z direction.
                 while (k >= 0 && !ProcessCube(parameters, meshData, i, j, k))
                 {
                     --k;
@@ -123,9 +142,8 @@ namespace Tyleo.MarchingCubes
                 return false;
             }
 
-            var result = cube.Process(parameters.CurrentFrameIndex, parameters.MarchingEntities, parameters.CubeEnvironmentTransform, parameters.IntensityThreshold, meshData);
-
-            return result;
+            // We return true if part of the surface of the mesh is located within the cube.
+            return cube.Process(parameters.CurrentFrameIndex, parameters.MarchingEntities, parameters.CubeEnvironmentTransform, parameters.IntensityThreshold, meshData);
         }
     }
 }

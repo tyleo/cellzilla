@@ -2,8 +2,27 @@
 
 namespace Tyleo.MarchingCubes
 {
+    /// <summary>
+    /// Provides methods to generate a lattice of MarchingCubes with correctly chared MarchingEdges
+    /// and MarchingPoints.
+    /// </summary>
     public static class CubeLatticeGenerator
     {
+        /// <summary>
+        /// Generates a lattice of MarchingCubes.
+        /// </summary>
+        /// <param name="cubesAlongX">
+        /// The number of cubes along the X-axis.
+        /// </param>
+        /// <param name="cubesAlongY">
+        /// The number of cubes along the Y-axis.
+        /// </param>
+        /// <param name="cubesAlongZ">
+        /// The number of cubes along the Z-axis.
+        /// </param>
+        /// <returns>
+        /// The lattice of MarchingCubes.
+        /// </returns>
         public static MarchingCube[, ,] CreateCubes(int cubesAlongX, int cubesAlongY, int cubesAlongZ)
         {
             MsDebug.Assert(cubesAlongX > 0);
@@ -22,15 +41,16 @@ namespace Tyleo.MarchingCubes
             // vertices we will ALWAYS be creating new edges.
             CreateInitialXYZVertex(points);
 
-            // By only creating the edges we can guarantee that exactly one edge will be created
-            // with each new adjacent vertex. These three methods handle all the cases where exactly
-            // one edge can be created per vertex.
+            // By only creating edges along the edges of the lattice we can guarantee that exactly
+            // one edge will be created with each new adjacent vertex. These three methods handle
+            // all the cases where exactly one edge can be created per vertex.
             CreateInitialXYEdge(points, zEdges);
             CreateInitialXZEdge(points, yEdges);
             CreateInitialYZEdge(points, xEdges);
 
             // Like the previous methods, these methods guarantee a constant amount of edges will be
-            // created, in this case, 2. By creating only the faces we get 2 edges per vertex.
+            // created, in this case, 2. By creating adjacent vertices only on the faces we get 2
+            // edges per vertex.
             CreateInitialXFace(points, yEdges, zEdges);
             CreateInitialYFace(points, xEdges, zEdges);
             CreateInitialZFace(points, xEdges, yEdges);
