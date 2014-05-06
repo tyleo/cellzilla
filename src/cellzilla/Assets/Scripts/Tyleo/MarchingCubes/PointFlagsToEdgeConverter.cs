@@ -1,5 +1,8 @@
 ﻿namespace Tyleo.MarchingCubes
 {
+    /// <summary>
+    /// Provides methods for converting PointFlags to EdgeFlags or EdgeIndices.
+    /// </summary>
     public static class PointFlagsToEdgeConverter
     {
         private static EdgeFlags[] _pointFlagsToEdgeFlagsTable =
@@ -524,12 +527,29 @@
                 new EdgeIndex[] {}
             };
 
-
+        /// <summary>
+        /// Returns the corresponding EdgeFlags for a set of PointFlags.
+        /// </summary>
+        /// <param name="pointFlags">
+        /// The PointFlags which correspond to the EdgeFlags.
+        /// </param>
+        /// <returns>
+        /// The corresponding EdgeFlags.
+        /// </returns>
         public static EdgeFlags GetEdgeFlagsFromPointFlags(PointFlags pointFlags)
         {
             return _pointFlagsToEdgeFlagsTable[(byte)pointFlags];
         }
 
+        /// <summary>
+        /// Returns the corresponding list of EdgeIndices for a set of PointFlags.
+        /// </summary>
+        /// <param name="pointFlags">
+        /// The PointFlags which correspond to the list of EdgeIndices.
+        /// </param>
+        /// <returns>
+        /// The corresponding list of EdgeIndices.
+        /// </returns>
         public static EdgeIndex[] GetEdgeIndicesFromPointFlags(PointFlags pointFlags)
         {
             return _pointFlagsToEdgeIndicesTable[(byte)pointFlags];

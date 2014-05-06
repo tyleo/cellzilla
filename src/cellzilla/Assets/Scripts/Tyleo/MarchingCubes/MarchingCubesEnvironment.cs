@@ -83,10 +83,7 @@ namespace Tyleo.MarchingCubes
 
             var meshDataProvider = MarchingMeshGenerator.GenerateMeshData(marchingMeshGeneratorParameterPack, _predictedNumberOfVertices, _predictedNumberOfTriangleIndices);
 
-            _mesh.vertices = meshDataProvider.GetVetrices();
-            _mesh.uv = _uvCreator == null ? new Vector2[_mesh.vertices.Length] : _uvCreator.CreateUVs(_mesh.vertices);
-            _mesh.triangles = meshDataProvider.GetTriangles();
-            _mesh.normals = meshDataProvider.GetNormals();
+            meshDataProvider.UpdateMesh(_mesh, _uvCreator);
         }
 
         private void Start()

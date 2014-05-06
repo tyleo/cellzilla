@@ -84,7 +84,7 @@ namespace Tyleo.MarchingCubes
         /// The marching entities which participate in determining the geometry of the mesh.
         /// </param>
         /// <param name="cubeEnvironmentTransform">
-        /// A transform used for convert world-space vertices into local-space vertices of the
+        /// A transform used for converting world-space vertices into local-space vertices of the
         /// MarchingCubesEnvironment and vice versa.
         /// </param>
         /// <param name="intensityThreshold">

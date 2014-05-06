@@ -143,7 +143,7 @@ namespace Tyleo.MarchingCubes
             }
 
             // We return true if part of the surface of the mesh is located within the cube.
-            return cube.Process(parameters.CurrentFrameIndex, parameters.MarchingEntities, parameters.CubeEnvironmentTransform, parameters.IntensityThreshold, meshData);
+            return cube.ProcessCube(parameters.CurrentFrameIndex, parameters.MarchingEntities, parameters.CubeEnvironmentTransform, parameters.IntensityThreshold, meshData);
         }
     }
 }

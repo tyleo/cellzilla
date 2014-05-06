@@ -25,9 +25,8 @@ namespace Tyleo.MarchingCubes
         /// A MarchingPoint on the side of the MarchingEdge opposite MarchingPoint0.
         /// </summary>
         public MarchingPoint MarchingPoint1 { get { return _marchingPoint1; } }
-
         /// <summary>
-        /// The index of the last frame on which this cube was updated.
+        /// The index of the last frame on which this edge was updated.
         /// </summary>
         public uint LastFrameTouched { get { return _lastFrameTouched; } }
         /// <summary>
@@ -66,7 +65,7 @@ namespace Tyleo.MarchingCubes
         public void ProcessEdge(uint currentFrameIndex, IEnumerable<MarchingEntity> marchingEntities, float intensityThreshold, MeshDataProvider meshData)
         {
             _lastFrameTouched = currentFrameIndex;
-            _edgeIndex = meshData.GetCurrentEdgeIndex();
+            _edgeIndex = meshData.CurrentEdgeIndex;
             SetLocalAndWorldSpaceCoordinates(intensityThreshold);
             _edgeNormal = GetEdgeNormal(marchingEntities);
 

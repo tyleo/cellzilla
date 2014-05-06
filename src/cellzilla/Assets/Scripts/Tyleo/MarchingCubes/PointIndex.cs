@@ -1,5 +1,9 @@
 ﻿namespace Tyleo.MarchingCubes
 {
+    /// <summary>
+    /// Provides a conversion from point names to integers used as a convenient first step for
+    /// creating the PointIndicex enum.
+    /// </summary>
     public enum PointIndex :
         byte
     {

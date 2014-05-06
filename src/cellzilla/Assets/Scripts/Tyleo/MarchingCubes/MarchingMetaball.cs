@@ -2,6 +2,9 @@
 
 namespace Tyleo.MarchingCubes
 {
+    /// <summary>
+    /// Acts as a Metaball when used in a marching cubes environment.
+    /// </summary>
     public sealed class MarchingMetaball :
         MarchingEntity
     {

@@ -2,10 +2,16 @@
 
 namespace Tyleo.MarchingCubes
 {
+    /// <summary>
+    /// Flags which indicate a set of points.
+    /// </summary>
     [Flags]
     public enum PointFlags :
         byte
     {
+        /// <summary>
+        /// The set containing no points.
+        /// </summary>
         None = 0,
 
         NxNyNz = 1 << (byte)PointIndex.NxNyNz,
@@ -17,6 +23,9 @@ namespace Tyleo.MarchingCubes
         PxPyNz = 1 << (byte)PointIndex.PxPyNz,
         PxPyPz = 1 << (byte)PointIndex.PxPyPz,
 
+        /// <summary>
+        /// The set containing all points.
+        /// </summary>
         All =
             NxNyNz |
             NxNyPz |
